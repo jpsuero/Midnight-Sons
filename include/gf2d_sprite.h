@@ -61,7 +61,7 @@ Sprite *gf2d_sprite_load_all(
  * @param frame which frame to draw
  */
 void gf2d_sprite_draw(
-    Sprite * sprite,
+    Sprite * sprite,        
     Vector2D position,
     Vector2D * scale,
     Vector2D * scaleCenter,

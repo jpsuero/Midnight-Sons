@@ -14,7 +14,7 @@ typedef struct
     Sprite * sprite_list;
 }SpriteManager;
 
-static SpriteManager sprite_manager;
+static SpriteManager sprite_manager = {0};
 
 void gf2d_sprite_close()
 {
@@ -35,13 +35,14 @@ void gf2d_sprite_init(Uint32 max)
         slog("cannot intialize a sprite manager for Zero sprites!");
         return;
     }
+    if (!(IMG_Init( IMG_INIT_PNG) & IMG_INIT_PNG))
+    {
+        slog("failed to init SDL_image: %s",SDL_GetError());
+        return;
+    }
     sprite_manager.max_sprites = max;
     sprite_manager.sprite_list = (Sprite *)malloc(sizeof(Sprite)*max);
     memset (sprite_manager.sprite_list,0,sizeof(Sprite)*max);
-    if (!(IMG_Init( IMG_INIT_PNG) & IMG_INIT_PNG))
-    {
-        slog("failed to init image: %s",SDL_GetError());
-    }
     slog("sprite system initialized");
     atexit(IMG_Quit);
     atexit(gf2d_sprite_close);
@@ -182,7 +183,7 @@ Sprite *gf2d_sprite_load_all(
     sprite->frames_per_line = framesPerLine;
     gfc_line_cpy(sprite->filepath,filename);
 
-    SDL_FreeSurface(surface);
+    SDL_FreeSurface(surface);//Keep it around if you plan on working with surface info
     return sprite;
 }
 
