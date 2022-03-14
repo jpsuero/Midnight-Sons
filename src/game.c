@@ -8,6 +8,7 @@
 #include "entity.h"
 #include "bug_ent.h"
 #include "tile_map.h"
+#include "magik_ent.h"
 
 int main(int argc, char * argv[])
 {
@@ -40,10 +41,11 @@ int main(int argc, char * argv[])
     SDL_ShowCursor(SDL_DISABLE);
     
     /*demo setup*/
-    sprite = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
+    sprite = gf2d_sprite_load_image("images/backgrounds/turtles.png");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
-    bug_ent_new(vector2d(500,300));
-    tilemap = tilemap_load("levels/testlevel.json");
+    magik_new(vector2d(300, 300));
+    //bug_ent_new(vector2d(500,300));
+    //tilemap = tilemap_load("levels/testlevel.json");
 
     /*main game loop*/
     while(!done)
@@ -61,7 +63,7 @@ int main(int argc, char * argv[])
             //backgrounds drawn first
             gf2d_sprite_draw_image(sprite,vector2d(0,0));
             // draw other game elements
-            tilemap_draw(tilemap);
+            //tilemap_draw(tilemap);
             entity_manager_draw_all();
             //UI elements last
             gf2d_sprite_draw(
