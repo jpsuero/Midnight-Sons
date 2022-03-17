@@ -69,6 +69,29 @@ Entity *entity_new()
     return NULL;
 }
 
+void entity_update(Entity* ent)
+{
+    if (!ent)return;
+    //generic upkeep
+
+    if (ent->update)
+    {
+        ent->update(ent);
+    }
+
+}
+
+void entity_manager_update_all()
+{
+    int i;
+    for (i = 0; i < entity_manager.max_entities; i++)
+    {
+        if (!entity_manager.entity_list[i]._inuse)continue;
+        entity_update(&entity_manager.entity_list[i]);
+    }
+}
+
+
 void entity_think(Entity *ent)
 {
     if (!ent)return;

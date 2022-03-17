@@ -9,7 +9,7 @@ void bug_think(Entity *self)
     const Uint8 *keys;
     if (!self)return;
     self->frame = (self->frame + 0.1);
-    if (self->frame >= 16)self->frame = 0;
+    if (self->frame >= 4)self->frame = 0;
     
     SDL_GetMouseState(&mx,&my);
     direction.x = mx - self->position.x;
@@ -19,7 +19,7 @@ void bug_think(Entity *self)
     
     keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
     
-    if (keys[SDL_SCANCODE_W])
+   /* if (keys[SDL_SCANCODE_W])
     {
         // move forward
         vector2d_set_magnitude(&direction,3);
@@ -32,7 +32,7 @@ void bug_think(Entity *self)
         {
             vector2d_clear(self->velocity);
         }
-    }
+    }*/
 
 }
 
@@ -45,7 +45,7 @@ Entity *bug_ent_new(Vector2D position)
         slog("no space for bugs");
         return NULL;
     }
-    ent->sprite = gf2d_sprite_load_all("images/space_bug_top.png",128,128,16);
+    ent->sprite = gf2d_sprite_load_all("images/skull_enemie.png",44,38,4);
     ent->think = bug_think;
     ent->draw_offset.x = -64;
     ent->draw_offset.y = -64;

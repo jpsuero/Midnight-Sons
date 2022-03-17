@@ -19,10 +19,14 @@ int main(int argc, char * argv[])
     Sprite *sprite;
     
     int mx,my;
+    int count = 0;
     float mf = 0;
     Sprite *mouse;
     Vector4D mouseColor = {255,100,255,200};
     TileMap *tilemap;
+    Entity* player;
+    Entity* enemy;
+    Entity* card;
     
     /*program initializtion*/
     init_logger("gf2d.log");
@@ -44,9 +48,8 @@ int main(int argc, char * argv[])
     /*demo setup*/
     sprite = gf2d_sprite_load_image("images/backgrounds/turtles.png");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
-    magik_new(vector2d(300, 300));
-    magik_ball_new(vector2d(350, 350));
-    //bug_ent_new(vector2d(500,300));
+    player = magik_new(vector2d(300, 300));
+    enemy = bug_ent_new(vector2d(500,300));
     //tilemap = tilemap_load("levels/testlevel.json");
 
     /*main game loop*/
@@ -78,6 +81,18 @@ int main(int argc, char * argv[])
                 &mouseColor,
                 (int)mf);
         gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
+        
+
+        //card attack
+        if (keys[SDL_SCANCODE_E] && count == 0)
+        {
+            card = magik_ball_new(vector2d(player->position.x + 50, player->position.y));
+            count = 1;
+        }
+        if (keys[SDL_SCANCODE_R])
+        {
+            count = 0;
+        }
         
         if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
        // slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());

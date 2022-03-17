@@ -15,7 +15,11 @@ typedef struct ENTITY_S
     Vector3D    rotation;   /**<how to rotate the sprite*/
     Vector2D    draw_scale;  /**<the scale factor for drawing the sprite*/
     Vector2D    mins,maxs;  /**<describe the bounding box around this entity*/
+    float       health;     /**entity health*/
+    int         frame_limit; /**used fr animations*/
+    int         player_state; /**0 for load, 1 = idle, 2 = walking, 3 = jump, 4 = attack, etc. */
     void (*think)(struct ENTITY_S *self);   /**<a pointer to a think function for this entity*/
+    void (*update)(struct ENTITY_S* self); //update thingy
 }Entity;
 
 
