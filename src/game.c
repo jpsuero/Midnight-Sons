@@ -8,7 +8,7 @@
 #include "entity.h"
 #include "bug_ent.h"
 #include "tile_map.h"
-#include "magik_ent.h"
+#include "venom_ent.h"
 #include "magik_ball.h"
 
 int main(int argc, char * argv[])
@@ -48,7 +48,7 @@ int main(int argc, char * argv[])
     /*demo setup*/
     sprite = gf2d_sprite_load_image("images/backgrounds/turtles.png");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
-    player = magik_new(vector2d(300, 300));
+    player = venom_new(vector2d(300, 300));
     enemy = bug_ent_new(vector2d(500,300));
     //tilemap = tilemap_load("levels/testlevel.json");
 
