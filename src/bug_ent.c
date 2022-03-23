@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "bug_ent.h"
 
+
 void bug_think(Entity *self)
 {
     Vector2D direction;
@@ -15,7 +16,9 @@ void bug_think(Entity *self)
     direction.x = mx - self->position.x;
     direction.y = my - self->position.y;
     angle = vector2d_angle(direction) - 90;
-    self->rotation.z = angle;
+    //self->rotation.z = angle;
+
+   
     
     keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
     
@@ -51,6 +54,10 @@ Entity *bug_ent_new(Vector2D position)
     ent->draw_offset.y = -64;
     ent->rotation.x = 64;
     ent->rotation.y = 64;
+    ent->health = 3;
+    ent->draw_scale.x = 3;
+    ent->draw_scale.y = 3;
+
     vector2d_copy(ent->position,position);
     return ent;
 }

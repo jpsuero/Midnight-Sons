@@ -15,11 +15,18 @@ typedef struct ENTITY_S
     Vector3D    rotation;   /**<how to rotate the sprite*/
     Vector2D    draw_scale;  /**<the scale factor for drawing the sprite*/
     Vector2D    mins,maxs;  /**<describe the bounding box around this entity*/
+    Vector4D    color;      /**color for hitbox rectangle*/
+    int         isEnemy;    /** if 1 entity is an enemy*/
     float       health;     /**entity health*/
-    int         frame_limit; /**used fr animations*/
-    int         player_state; /**0 for load, 1 = idle, 2 = walking, 3 = jump, 4 = attack, etc. */
+    float       stamina;
+    int         frame_limit; /**used for animations*/
+    int         player_state; 
+    int         isAttacking; //1 for light, 2 for medium, 3 for heavy
+    int         canAttack;
     void (*think)(struct ENTITY_S *self);   /**<a pointer to a think function for this entity*/
     void (*update)(struct ENTITY_S* self); //update thingy
+    SDL_Rect    hitbox;     /** used to track player hitbox*/
+
 }Entity;
 
 

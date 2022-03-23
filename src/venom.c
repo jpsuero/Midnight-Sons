@@ -12,6 +12,9 @@ void magik_think(Entity* self)
 	//set frame limit
 	if (self->frame >= self->frame_limit)self->frame = 0;
 
+	//hitbox
+	
+
 	//animator
 	if (self->player_state == 1)
 	{
@@ -41,6 +44,10 @@ void magik_think(Entity* self)
 	{
 		self->frame_limit = 8;
 	}
+	else if (self->player_state == 8)
+	{
+		self->frame_limit = 6;
+	}
 
 
 	//get the keyboard state
@@ -49,17 +56,13 @@ void magik_think(Entity* self)
 	//move player forward
 	if (keys[SDL_SCANCODE_D])
 	{
-		//self->frame_limit = 6;
 		self->player_state = 2;
 		self->position.x += 3;
 		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
-		slog("moving forward");
 	}
 	//move player backwards
 	if (keys[SDL_SCANCODE_A])
 	{
-		//self->frame_limit = 6;
-
 		self->player_state = 2;
 		self->position.x -= 3;
 		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
@@ -68,7 +71,6 @@ void magik_think(Entity* self)
 	//move player up
 	if (keys[SDL_SCANCODE_W])
 	{
-		//self->frame_limit = 6;
 		self->player_state = 2;
 		self->position.y -= 3;
 		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
@@ -76,7 +78,6 @@ void magik_think(Entity* self)
 	//move player down
 	if (keys[SDL_SCANCODE_S])
 	{
-		//self->frame_limit = 6;
 		self->player_state = 2;
 		self->position.y += 3;
 		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
@@ -85,46 +86,66 @@ void magik_think(Entity* self)
 	//player jump 
 	if (keys[SDL_SCANCODE_SPACE])
 	{
-		//self->frame_limit = 3;
 		self->player_state = 3;
 		self->sprite = gf2d_sprite_load_all("images/Gambit_jump.png", 93, 106, 3);
-
 	}
 
-	if (keys[SDL_SCANCODE_E])
+	if (keys[SDL_SCANCODE_E] && self->canAttack == 1 && self->stamina > 0)
 	{
 		self->player_state = 4;
+		self->isAttacking = 1;
+		self->canAttack = 0;
+		self->stamina -= 1;
 		self->sprite = gf2d_sprite_load_all("images/venom_attack1.png", 212, 131, 3);
 
 	}
-	if (keys[SDL_SCANCODE_Q])
+	if (keys[SDL_SCANCODE_Q] && self->canAttack == 1 && self->stamina >= 2)
 	{
 		self->player_state = 5;
+		self->isAttacking = 2;
+		self->canAttack = 0;
+		self->stamina -= 2;
 		self->sprite = gf2d_sprite_load_all("images/venom_attack2.png", 165.14, 220, 7);
 	}
-	if (keys[SDL_SCANCODE_F])
+	if (keys[SDL_SCANCODE_F] && self->canAttack == 1 && self->stamina == 5)
 	{
 		self->player_state = 6;
+		self->health = 5;
+		self->canAttack = 0;
+		self->stamina -= 5;
 		self->sprite = gf2d_sprite_load_all("images/venom_attack4.png", 246, 191, 18);
 	}
-	if (keys[SDL_SCANCODE_G])
+	if (keys[SDL_SCANCODE_G] && self->canAttack == 1 && self->stamina >= 3)
 	{
 		self->player_state = 7;
+		self->isAttacking = 3;
+		self->canAttack = 0;
+		self->stamina -= 3;
 		self->sprite = gf2d_sprite_load_all("images/venom_attack3.png", 311, 161, 8);
 	}
-
-
-	if (!keys[SDL_SCANCODE_S] && !keys[SDL_SCANCODE_W] && !keys[SDL_SCANCODE_A] && !keys[SDL_SCANCODE_D] && !keys[SDL_SCANCODE_SPACE] && !keys[SDL_SCANCODE_E] && !keys[SDL_SCANCODE_Q] && !keys[SDL_SCANCODE_F] && !keys[SDL_SCANCODE_G])
+	if (keys[SDL_SCANCODE_X] && self->canAttack == 1)
 	{
-		self->player_state = 1;
-		self->frame_limit = 13;
-		self->sprite = gf2d_sprite_load_all("images/venom_idle.png", 173, 143, 13);
+		self->player_state = 8;
+		self->canAttack = 0;
+		self->stamina -= 3;
+		self->sprite = gf2d_sprite_load_all("images/venom_poison.png", 220, 144, 7);
 	}
 
+	//idle requirements
+	if (!keys[SDL_SCANCODE_X] && !keys[SDL_SCANCODE_S] && !keys[SDL_SCANCODE_W] && !keys[SDL_SCANCODE_A] && !keys[SDL_SCANCODE_D] && !keys[SDL_SCANCODE_SPACE] && !keys[SDL_SCANCODE_E] && !keys[SDL_SCANCODE_Q] && !keys[SDL_SCANCODE_F] && !keys[SDL_SCANCODE_G])
+	{
+		self->player_state = 1;
+		self->sprite = gf2d_sprite_load_all("images/venom_idle.png", 173, 143, 13);
+		self->frame = (self->frame + 0.01);
+		self->isAttacking = 0;
+		self->canAttack = 1;
+	}
 }
 
 Entity* venom_new(Vector2D position)
 {
+	SDL_Rect hitbox;
+	
 	Entity* ent;
 	ent = entity_new();
 	if (!ent)
@@ -142,9 +163,22 @@ Entity* venom_new(Vector2D position)
 	ent->draw_scale.y = 1;
 	ent->frame_limit = 20;
 	ent->player_state = 0;
+	ent->health = 5;
+	ent->stamina = 5;
 	vector2d_copy(ent->position, position);
+	ent->hitbox.x = ent->position.x;
+	ent->hitbox.y = ent->position.y;
+	ent->hitbox.w = 10;
+	ent->hitbox.h = 15;
+	ent->color.x = 100;
+	ent->color.y =160;
+	ent->color.z = 255;
+	ent->color.w = 50;
 	return ent;
+	
+	
 
+	
 }
 
 //end of file
