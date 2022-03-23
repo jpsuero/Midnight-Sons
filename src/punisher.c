@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "punisher_ent.h"
+#include "gf2d_draw.h"
 
 void punisher_think(Entity* self)
 {
@@ -45,6 +46,10 @@ void punisher_think(Entity* self)
 		self->frame_limit = 7;
 	}
 
+	//hitbox movement
+	self->hitbox.x = self->position.x-50;
+	self->hitbox.y = self->position.y-60;
+
 
 	//get the keyboard state
 	keys = SDL_GetKeyboardState(NULL); //get the keyboard for this frame
@@ -55,6 +60,7 @@ void punisher_think(Entity* self)
 		//self->frame_limit = 6;
 		self->player_state = 2;
 		self->position.x += 3;
+		self->flip = vector2d(0, 0);
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
 	}
 	//move player backwards
@@ -64,6 +70,7 @@ void punisher_think(Entity* self)
 
 		self->player_state = 2;
 		self->position.x -= 3;
+		self->flip = vector2d(1, 0);
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
 
 	}
@@ -91,30 +98,40 @@ void punisher_think(Entity* self)
 
 	}
 	//punisher punch
-	if (keys[SDL_SCANCODE_E])
+	if (keys[SDL_SCANCODE_E] && self->canAttack == 1)
 	{
 		self->player_state = 4;
+		self->isAttacking = 1;
+		self->canAttack = 0;
 		self->sprite = gf2d_sprite_load_all("images/punisher_attack1.png", 97, 101, 11);
 
 	}
 	//punisher kick
-	if (keys[SDL_SCANCODE_Q])
+	if (keys[SDL_SCANCODE_Q] && self->canAttack == 1 && self->stamina >= 2)
 	{
 		self->player_state = 5;
+		self->stamina -= 2;
+		self->isAttacking = 1;
+		self->canAttack = 0;
 		self->sprite = gf2d_sprite_load_all("images/punisher_kick.png", 94, 112, 8);
 	}
 	//punisher shooting
-	if (keys[SDL_SCANCODE_F])
+	if (keys[SDL_SCANCODE_F] && self->canAttack == 1 && self->stamina >= 3)
 	{
 		if (self->frame > 18)self->frame = 0;
 		self->player_state = 6;
+		self->stamina -= 3;
+		self->isAttacking = 1;
+		self->canAttack = 0;
 		self->sprite = gf2d_sprite_load_all("images/punisher_twirl.png", 80, 103, 6);
 	}
 	//punisher shotgun
-	if (keys[SDL_SCANCODE_G])
+	if (keys[SDL_SCANCODE_G] && self->canAttack == 1)
 	{
 		if (self->frame > 8)self->frame = 0;
 		self->player_state = 7;
+		self->isAttacking = 1;
+		self->canAttack = 0;
 		self->sprite = gf2d_sprite_load_all("images/venom_attack3.png", 311, 161, 8);
 	}
 
@@ -128,6 +145,8 @@ void punisher_think(Entity* self)
 		self->player_state = 1;
 		self->sprite = gf2d_sprite_load_all("images/punisher_idle.png", 85, 93, 3);
 		self->frame = (self->frame + 0.01);
+		self->isAttacking = 0;
+		self->canAttack = 1;
 	}
 
 
@@ -153,7 +172,12 @@ Entity* punisher_new(Vector2D position)
 	ent->draw_scale.y = 1.5;
 	ent->frame_limit = 3;
 	ent->player_state = 1;
-	ent->health = 10;
+	ent->health = 5;
+	ent->stamina = 5;
+	ent->hitbox.w = 100;
+	ent->hitbox.h = 150;
+	ent->flip = vector2d(0, 0);
+
 	vector2d_copy(ent->position, position);
 	return ent;
 

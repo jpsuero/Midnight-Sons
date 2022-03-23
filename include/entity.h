@@ -21,8 +21,10 @@ typedef struct ENTITY_S
     float       stamina;
     int         frame_limit; /**used for animations*/
     int         player_state; 
-    int         isAttacking; //1 for light, 2 for medium, 3 for heavy
+    int         isAttacking; /**1 for light, 2 for medium, 3 for heavy*/
     int         canAttack;
+    Vector2D    target;     /**player to target*/
+    Vector2D    flip;
     void (*think)(struct ENTITY_S *self);   /**<a pointer to a think function for this entity*/
     void (*update)(struct ENTITY_S* self); //update thingy
     SDL_Rect    hitbox;     /** used to track player hitbox*/

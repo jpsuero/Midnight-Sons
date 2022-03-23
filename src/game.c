@@ -7,20 +7,29 @@
 #include "gf2d_draw.h"
 
 #include "entity.h"
-#include "bug_ent.h"
+#include "skull_ent.h"
 #include "tile_map.h"
 #include "venom_ent.h"
 #include "magik_ball.h"
 #include "punisher_ent.h"
 #include "moving_bg.h"
+#include "collision.h"
+#include "highscore.h"
+#include "simple_json.h"
+
 
 int main(int argc, char * argv[])
 {
     /*variable declarations*/
+    int highscore = 0;
+    int score = 0;
     int done = 0;
     int i = 0;
     int count = 0;
+    int enemyCount = 1;
     int staminaCount = 0;
+    int colliding;
+    float spawnPos = 1200;
     const Uint8 * keys;
     Sprite *icon, *health, *stamina;
     
@@ -57,11 +66,11 @@ int main(int argc, char * argv[])
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
     player = venom_new(vector2d(300, 500));
     player->health = 5;
-    enemy = bug_ent_new(vector2d(600,500));
-    enemy->health = 30;
+    enemy = skull_ent_new(vector2d(spawnPos, 300));
     icon = gf2d_sprite_load_image("images/venom_icon.png");
     health = gf2d_sprite_load_image("images/health.png");
     stamina = gf2d_sprite_load_image("images/stamina.png");
+    highscore = highscore_load("levels/testlevel.json");
 
     //tilemap = tilemap_load("levels/testlevel.json");
 
@@ -75,17 +84,19 @@ int main(int argc, char * argv[])
         mf+=0.1;
         if (mf >= 16.0)mf = 0;
         entity_manager_think_all();
+        colliding = collision_check(player, enemy);
         
         gf2d_graphics_clear_screen();// clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
             //backgrounds drawn first
         //gf2d_sprite_draw_image(sprite, vector2d(player->position.x *-1, 0));
             // draw other game elements
-        gf2d_draw_rect(player->hitbox, player->color);
+        
             //tilemap_draw(tilemap);
             entity_manager_draw_all();
             //UI elements last
-            
+            gf2d_draw_rect(player->hitbox, vector4d(255,0,0,200));
+            gf2d_draw_rect(enemy->hitbox, mouseColor);
             //health manager
             if (player->health == 5)
             {
@@ -157,6 +168,24 @@ int main(int argc, char * argv[])
 
         gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
         
+        //enemy spawner
+        if (enemyCount == 0)
+        {
+            if (spawnPos == 1200)
+            {
+                spawnPos = 100;
+            }
+            else
+            {
+                spawnPos = 1200;
+            }
+            
+            enemy = skull_ent_new(vector2d(spawnPos, 300));
+            enemyCount = 1;
+        }
+
+
+                                  
         //player switch: 1 for punisher and 2 for venom
         if (keys[SDL_SCANCODE_1])
         {
@@ -170,24 +199,29 @@ int main(int argc, char * argv[])
             player = venom_new(vector2d(300, 500));
             icon = gf2d_sprite_load_image("images/venom_icon.png");
         }
+        
 
         //player attacks
-        if (player->isAttacking == 1)
+        if (player->isAttacking == 1 && colliding)
         {
             enemy->health -= 1;
             player->isAttacking = 0;
         }
         
-        if (player->isAttacking == 2)
+        if (player->isAttacking == 2 && colliding)
         {
             enemy->health -= 2;
         }
 
-        if (player->isAttacking == 3)
+        if (player->isAttacking == 3 && colliding)
         {
             enemy->health -= 3;
         }
 
+        //enemy target update
+        enemy->target.x = player->position.x;
+        enemy->target.y = player->position.y;
+        
         //hurt player
         if (count == 0 && keys[SDL_SCANCODE_O])
         {
@@ -199,6 +233,11 @@ int main(int argc, char * argv[])
         if (keys[SDL_SCANCODE_R])
         {
             count = 0;
+        }
+        
+        if (keys[SDL_SCANCODE_H])
+        {
+            slog("%i", highscore);
         }
         
 
@@ -214,6 +253,13 @@ int main(int argc, char * argv[])
         if (enemy->health <= 0)
         {
             entity_free(enemy);
+            enemyCount = 0;
+            score++;
+        }
+
+        if (score>highscore)
+        {
+            highscore_save(score);
         }
 
        

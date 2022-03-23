@@ -12,8 +12,10 @@ void magik_think(Entity* self)
 	//set frame limit
 	if (self->frame >= self->frame_limit)self->frame = 0;
 
-	//hitbox
-	
+	//hitbox movement
+	self->hitbox.x = self->position.x - 40;
+	self->hitbox.y = self->position.y - 60;
+
 
 	//animator
 	if (self->player_state == 1)
@@ -58,6 +60,7 @@ void magik_think(Entity* self)
 	{
 		self->player_state = 2;
 		self->position.x += 3;
+		self->flip = vector2d(0, 0);
 		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
 	}
 	//move player backwards
@@ -65,6 +68,8 @@ void magik_think(Entity* self)
 	{
 		self->player_state = 2;
 		self->position.x -= 3;
+		self->flip = vector2d(1, 0);
+		
 		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
 
 	}
@@ -90,7 +95,7 @@ void magik_think(Entity* self)
 		self->sprite = gf2d_sprite_load_all("images/Gambit_jump.png", 93, 106, 3);
 	}
 
-	if (keys[SDL_SCANCODE_E] && self->canAttack == 1 && self->stamina > 0)
+	if (keys[SDL_SCANCODE_E] && self->canAttack == 1)
 	{
 		self->player_state = 4;
 		self->isAttacking = 1;
@@ -159,21 +164,17 @@ Entity* venom_new(Vector2D position)
 	ent->draw_offset.y = -64;
 	ent->rotation.x = 64;
 	ent->rotation.y = 64;
-	ent->draw_scale.x = 1;
-	ent->draw_scale.y = 1;
+	ent->draw_scale.x = 1.5;
+	ent->draw_scale.y = 1.5;
 	ent->frame_limit = 20;
 	ent->player_state = 0;
 	ent->health = 5;
 	ent->stamina = 5;
+	ent->flip = vector2d(0, 0);
 	vector2d_copy(ent->position, position);
-	ent->hitbox.x = ent->position.x;
-	ent->hitbox.y = ent->position.y;
-	ent->hitbox.w = 10;
-	ent->hitbox.h = 15;
-	ent->color.x = 100;
-	ent->color.y =160;
-	ent->color.z = 255;
-	ent->color.w = 50;
+	
+	ent->hitbox.w = 200;
+	ent->hitbox.h = 200;
 	return ent;
 	
 	

@@ -1,5 +1,5 @@
-#ifndef __MAGIK_ENT_H__
-#define __MAGIK_ENT_H__
+#ifndef __VENOM_ENT_H__
+#define __VENOM_ENT_H__
 
 #include "entity.h"
 /**
