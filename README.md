@@ -22,7 +22,6 @@ heal (f) does 0 dmg takes 5 stamina, heals player to full health
 
 poison(x) does 0 dmg takes 3 stamina, turns enemies against each other
 
-/n
 
 <b>Punisher:</b>
 
