@@ -57,19 +57,19 @@ void punisher_think(Entity* self)
 	//move player forward
 	if (keys[SDL_SCANCODE_D])
 	{
-		//self->frame_limit = 6;
+		
 		self->player_state = 2;
-		self->position.x += 3;
+		self->position.x += self->speed;
 		self->flip = vector2d(0, 0);
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
 	}
 	//move player backwards
 	if (keys[SDL_SCANCODE_A])
 	{
-		//self->frame_limit = 6;
+		
 
 		self->player_state = 2;
-		self->position.x -= 3;
+		self->position.x -= self->speed;
 		self->flip = vector2d(1, 0);
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
 
@@ -79,14 +79,14 @@ void punisher_think(Entity* self)
 	{
 		//self->frame_limit = 6;
 		self->player_state = 2;
-		self->position.y -= 3;
+		self->position.y -= self->speed;
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
 	}
 	//move player down
 	if (keys[SDL_SCANCODE_S])
 	{
 		self->player_state = 2;
-		self->position.y += 3;
+		self->position.y += self->speed;
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
 	}
 
@@ -111,18 +111,17 @@ void punisher_think(Entity* self)
 	{
 		self->player_state = 5;
 		self->stamina -= 2;
-		self->isAttacking = 1;
+		self->isAttacking = 2;
 		self->canAttack = 0;
 		self->sprite = gf2d_sprite_load_all("images/punisher_kick.png", 94, 112, 8);
 	}
 	//punisher twirl
 	if (keys[SDL_SCANCODE_F] && self->canAttack == 1 && self->stamina >= 3)
 	{
-		if (self->frame > 18)self->frame = 0;
 		self->player_state = 6;
 		self->stamina -= 3;
-		self->isAttacking = 1;
-		//self->canAttack = 0;
+		self->isAttacking = 3;
+		self->canAttack = 1;
 		self->sprite = gf2d_sprite_load_all("images/punisher_twirl.png", 80, 103, 6);
 	}
 	//punisher shotgun
@@ -179,10 +178,12 @@ Entity* punisher_new(Vector2D position)
 	ent->frame_limit = 3;
 	ent->player_state = 1;
 	ent->health = 5;
+	ent->strength = 1;
 	ent->stamina = 5;
 	ent->hitbox.w = 100;
 	ent->hitbox.h = 150;
 	ent->flip = vector2d(0, 0);
+	ent->speed = 3;
 
 	vector2d_copy(ent->position, position);
 	return ent;

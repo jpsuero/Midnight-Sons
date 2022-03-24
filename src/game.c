@@ -19,6 +19,11 @@
 #include "aimbot.h"
 #include "BOSS.h"
 #include "aim_shooter.h"
+#include "chair_breakable.h"
+#include "health_pickup.h"
+#include "stamina_pickup.h"
+#include "speed_pickup.h"
+#include "strength_pickup.h"
 
 
 int main(int argc, char * argv[])
@@ -34,11 +39,13 @@ int main(int argc, char * argv[])
     int enemySwap = 0;
     int colliding;
     int bossCollision = 0;
+    int chairCollision;
+    int healthCollision, speedCollision, staminaCollision, strengthCollision;
     int timer = 0;
     int BOSSMODE = 0;
     float spawnPos = 1200;
     const Uint8 * keys;
-    Sprite* icon, * health, * stamina, *stamina_potion;
+    Sprite* icon, * health, * stamina;
     
     int mx,my;
     int position = 70;
@@ -50,6 +57,11 @@ int main(int argc, char * argv[])
     Entity* enemy;
     Entity* bg;
     Entity* BOSS = NULL;
+    Entity* chair;
+    Entity* health_pickup;
+    Entity* speed_pickup;
+    Entity* stamina_pickup;
+    Entity* strength_pickup;
     
     
     /*program initializtion*/
@@ -78,8 +90,12 @@ int main(int argc, char * argv[])
     icon = gf2d_sprite_load_image("images/venom_icon.png");
     health = gf2d_sprite_load_image("images/health.png");
     stamina = gf2d_sprite_load_image("images/stamina.png");
-    stamina_potion = gf2d_sprite_load_image("images/laser.png");
     highscore = highscore_load("levels/testlevel.json");
+    chair = chair_ent_new(vector2d(600, 400));
+    health_pickup = health_ent_new(vector2d(900, 650));
+    stamina_pickup = stamina_ent_new(vector2d(3000, 400));
+    speed_pickup = speed_ent_new(vector2d(4000, 650));
+    strength_pickup = strength_ent_new(vector2d(5000, 400));
 
     //tilemap = tilemap_load("levels/testlevel.json");
 
@@ -94,6 +110,11 @@ int main(int argc, char * argv[])
         if (mf >= 16.0)mf = 0;
         entity_manager_think_all();
         colliding = collision_check(player, enemy);
+        chairCollision = collision_check(player, chair);
+        healthCollision = collision_check(player, health_pickup);
+        staminaCollision = collision_check(player, stamina_pickup);
+        speedCollision = collision_check(player, speed_pickup);
+        strengthCollision = collision_check(player, strength_pickup);
         
         gf2d_graphics_clear_screen();// clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
@@ -104,8 +125,9 @@ int main(int argc, char * argv[])
             //tilemap_draw(tilemap);
             entity_manager_draw_all();
             //UI elements last
-            gf2d_draw_rect(player->hitbox, vector4d(255,0,0,200));
-            gf2d_draw_rect(enemy->hitbox, mouseColor);
+           // gf2d_draw_rect(player->hitbox, vector4d(255,0,0,200));
+           // gf2d_draw_rect(enemy->hitbox, mouseColor);
+  
             //gf2d_draw_rect(BOSS->hitbox, mouseColor);
             //health manager
             if (player->health == 5)
@@ -192,9 +214,7 @@ int main(int argc, char * argv[])
             bossCollision = collision_check(BOSS, player);
             if (bossCollision)player->health = 0;
         }
-
-        
-                                  
+                        
         //enemy spawner
         if (enemyCount == 0 && !BOSSMODE)
         {
@@ -212,7 +232,7 @@ int main(int argc, char * argv[])
             }
             
             if (enemySwap == 0)enemy = skull_ent_new(vector2d(spawnPos, 300));
-            else if (enemySwap == 2)enemy = shooter_ent_new(vector2d(spawnPos, 500));
+            else if (enemySwap == 2)enemy = shooter_ent_new(vector2d(200, 500));
             else { enemy = aimbot_ent_new(vector2d(spawnPos, 500)); }
             enemyCount = 1;
         }
@@ -225,6 +245,15 @@ int main(int argc, char * argv[])
         if (keys[SDL_SCANCODE_7])
         {
             enemySwap = 2;
+        }
+        if (keys[SDL_SCANCODE_8])
+        {
+            enemySwap = 0;
+        }
+
+        if (keys[SDL_SCANCODE_K])
+        {
+            entity_free(enemy);
         }
 
                                   
@@ -246,19 +275,19 @@ int main(int argc, char * argv[])
         //player attacks
         if (player->isAttacking == 1 && colliding)
         {
-            enemy->health -= 1;
+            enemy->health -= 1 * player->strength;
             player->isAttacking = 0;
         }
         
         if (player->isAttacking == 2 && colliding)
         {
-            enemy->health -= 2;
+            enemy->health -= 2 * player->strength;
             player->isAttacking = 0;
         }
 
         if (player->isAttacking == 3 && colliding)
         {
-            enemy->health -= 3;
+            enemy->health -= 3 * player->strength;
             player->isAttacking = 0;
         }
 
@@ -269,8 +298,7 @@ int main(int argc, char * argv[])
             enemy->target.y = player->position.y;
         }
         
-
-        
+        //skull hurt player
         if (enemySwap == 0)
         {
             if (colliding)
@@ -288,12 +316,13 @@ int main(int argc, char * argv[])
             }
         }
         
-
+        //shooter hurt player
         if (enemySwap == 2)
         {
-            if (enemy->position.y <= 200)
-                gf2d_sprite_draw_image(stamina_potion, vector2d(1100, enemy->position.y));
-
+            if (enemy->position.y <= 200 && player->position.y <= 320 && count == 0)
+                player->health -= 3;
+            if (enemy->position.y >= 650 && player->position.y >= 625 && count == 0)
+                player->health -= 3;
         }
 
         //hurt player
@@ -313,9 +342,39 @@ int main(int argc, char * argv[])
             slog("%i", highscore);
         }
         
+        //chair manager
+        if (chairCollision && player->isAttacking)
+        {
+            chair->sprite = gf2d_sprite_load_image("images/brokenbench.png");
+        }
 
+        //health pickup manager
+        if (healthCollision)
+        {
+            player->health = 5;
+            entity_free(health_pickup);
+        }
 
+        //stamina pickup manager
+        if(staminaCollision)
+        {
+            player->stamina = 5;
+            entity_free(stamina_pickup);
+        }
 
+        //speed pickup manager
+        if (speedCollision)
+        {
+            player->speed = 6;
+            entity_free(speed_pickup);
+        }
+
+        //strength pickup manager
+        if (strengthCollision)
+        {
+            player->strength = 2;
+            entity_free(strength_pickup);
+        }
 
         //give stamina back
         staminaCount++;

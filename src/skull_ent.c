@@ -64,7 +64,7 @@ Entity *skull_ent_new(Vector2D position, Vector2D hero)
     ent->draw_scale.y = 3;
     ent->hitbox.w = 75;
     ent->hitbox.h = 100;
-    ent->health = 1;
+    ent->health = 3;
     ent->flip = vector2d(0, 0);
     
 

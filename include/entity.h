@@ -21,6 +21,9 @@ typedef struct ENTITY_S
     float       health;     /**entity health*/
     float       stamina;
     int         invisible;
+    int         speed;
+    int         strength;
+    int         isColliding;
     int         frame_limit; /**used for animations*/
     int         player_state; 
     int         isAttacking; /**1 for light, 2 for medium, 3 for heavy*/

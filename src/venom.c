@@ -122,8 +122,8 @@ void magik_think(Entity* self)
 	if (keys[SDL_SCANCODE_G] && self->canAttack == 1 && self->stamina >= 3)
 	{
 		self->player_state = 7;
-		self->isAttacking = 3;
-		self->canAttack = 0;
+		if(self->frame >=4 && self->frame<=6)self->isAttacking = 3;
+		else{ self->canAttack = 0; }
 		self->stamina -= 3;
 		self->sprite = gf2d_sprite_load_all("images/venom_attack3.png", 311, 161, 8);
 	}
@@ -131,6 +131,7 @@ void magik_think(Entity* self)
 	{
 		self->player_state = 8;
 		self->canAttack = 0;
+		self->isAttacking = 4;
 		self->stamina -= 3;
 		self->sprite = gf2d_sprite_load_all("images/venom_poison.png", 220, 144, 7);
 	}
@@ -168,6 +169,7 @@ Entity* venom_new(Vector2D position)
 	ent->frame_limit = 20;
 	ent->player_state = 0;
 	ent->health = 5;
+	ent->strength = 1;
 	ent->stamina = 5;
 	ent->flip = vector2d(0, 0);
 	vector2d_copy(ent->position, position);
