@@ -1,30 +1,42 @@
-# gameframework2d (GF2D)
-a collection of utlitity functions designed to facilitate creating 2D games with SDL2
-This project is specifically intended to function as an educational tool for my students taking 2D Game Programming.
+<b>Midnight Sons</b>
 
-Currently the project is in a WIP state, however it is functional with sample projects showcasing rudimentary scrolling shooters,
-platformers, and adventure games.
+Objective:
+defeat all enemies and final boss to win.
 
-The master branch is kept deliberately minimal to allow students to build out systems as they are learning.
-Other branches have more complete system: Collisions, menus, input abstraction.
+Playable Characters: Venom and The Punisher
 
-# Build Process
 
-Before you can build the example code we are providing for you, you will need to obtain the libraries required
-by the source code
- - SDL2
- - SDL2_image
- - SDL2_mixer
- - SDL2_ttf
-There are additional sub modules that are needed for this project to work as well, but they can be pulled right from within the project.
-Performable from the following steps from the root of the cloned git repository within a terminal. 
+<b>Venom</b>
 
-Make sure you fetch submodules: `git submodule update --init --recursive`
-Go into each submodule's src directory and type:
-`make`
-`make static`
+movement: wasd and space for jump
 
-Once each submodule has been made you can go into the base project src folder anre simply type:
-`make`
+attacks:
 
-You should now have a `gf2d` binary within the root of your git repository. Executing this will start your game.
+punch(e) does 1 dmg takes 0 stamina
+
+swipe(q) does 2 dmg takes 2 stamina
+
+chomp(g) does 3 dmg takes 3 stamina
+
+heal (f) does 0 dmg takes 5 stamina, heals player to full health
+
+poison(x) does 0 dmg takes 3 stamina, turns enemies against each other
+
+
+<b>Punisher:</b>
+
+movement: wasd and space for jump
+
+attacks:
+
+punch(e) does 1 dmg takes 0 stamina
+
+kick (q) does 2 dmg takes 2 stamina
+
+twirl(f) does 2 dmg takes 4 stamina, pushes enmies away
+
+shoot(g) does 2 dmg takes 1 bullet
+
+shotgun(x) does 5 dmg takes 3 bullets
+
+
