@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 #include "gf2d_sprite.h"
+#include "gf2d_draw.h"
 
 typedef struct ENTITY_S
 {
@@ -19,6 +20,7 @@ typedef struct ENTITY_S
     int         isEnemy;    /** if 1 entity is an enemy*/
     float       health;     /**entity health*/
     float       stamina;
+    int         invisible;
     int         frame_limit; /**used for animations*/
     int         player_state; 
     int         isAttacking; /**1 for light, 2 for medium, 3 for heavy*/

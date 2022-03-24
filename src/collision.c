@@ -4,7 +4,7 @@
 
 int collision_check(Entity* player, Entity* enemy)
 {
-	if (enemy->hitbox.x >= player->hitbox.x && enemy->hitbox.x <= player->hitbox.x + player->hitbox.w)
+	if (enemy->hitbox.x >= player->hitbox.x && enemy->hitbox.x <= player->hitbox.x + player->hitbox.w && enemy->hitbox.y >= player->hitbox.y && enemy->hitbox.y <=player->hitbox.y + player->hitbox.h)
 	{
 		return 1;
 	}

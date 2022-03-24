@@ -9,7 +9,7 @@ int highscore_load(char* filename)
 
 	json = sj_load(filename);
 	sj_get_integer_value(sj_object_get_value(json, "highscore"), &highscore);
-	slog("%i", highscore);
+	slog("Highscore: ""%i", highscore);
 
 	return highscore;
 	

@@ -100,7 +100,6 @@ void magik_think(Entity* self)
 		self->player_state = 4;
 		self->isAttacking = 1;
 		self->canAttack = 0;
-		self->stamina -= 1;
 		self->sprite = gf2d_sprite_load_all("images/venom_attack1.png", 212, 131, 3);
 
 	}

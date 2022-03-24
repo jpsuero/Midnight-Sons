@@ -16,6 +16,9 @@
 #include "collision.h"
 #include "highscore.h"
 #include "simple_json.h"
+#include "aimbot.h"
+#include "BOSS.h"
+#include "aim_shooter.h"
 
 
 int main(int argc, char * argv[])
@@ -28,10 +31,14 @@ int main(int argc, char * argv[])
     int count = 0;
     int enemyCount = 1;
     int staminaCount = 0;
+    int enemySwap = 0;
     int colliding;
+    int bossCollision = 0;
+    int timer = 0;
+    int BOSSMODE = 0;
     float spawnPos = 1200;
     const Uint8 * keys;
-    Sprite *icon, *health, *stamina;
+    Sprite* icon, * health, * stamina, *stamina_potion;
     
     int mx,my;
     int position = 70;
@@ -42,6 +49,7 @@ int main(int argc, char * argv[])
     Entity* player;
     Entity* enemy;
     Entity* bg;
+    Entity* BOSS = NULL;
     
     
     /*program initializtion*/
@@ -70,6 +78,7 @@ int main(int argc, char * argv[])
     icon = gf2d_sprite_load_image("images/venom_icon.png");
     health = gf2d_sprite_load_image("images/health.png");
     stamina = gf2d_sprite_load_image("images/stamina.png");
+    stamina_potion = gf2d_sprite_load_image("images/laser.png");
     highscore = highscore_load("levels/testlevel.json");
 
     //tilemap = tilemap_load("levels/testlevel.json");
@@ -97,6 +106,7 @@ int main(int argc, char * argv[])
             //UI elements last
             gf2d_draw_rect(player->hitbox, vector4d(255,0,0,200));
             gf2d_draw_rect(enemy->hitbox, mouseColor);
+            //gf2d_draw_rect(BOSS->hitbox, mouseColor);
             //health manager
             if (player->health == 5)
             {
@@ -164,26 +174,58 @@ int main(int argc, char * argv[])
 
         
             gf2d_sprite_draw_image(icon, vector2d(50, 50));
+            
+
 
 
         gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
         
+        //BOSS MODE
+        if (keys[SDL_SCANCODE_L])
+        {
+            BOSSMODE = 1;
+            BOSS = boss_ent_new(vector2d(200, 500));
+        }
+
+        if (BOSSMODE)
+        {
+            bossCollision = collision_check(BOSS, player);
+            if (bossCollision)player->health = 0;
+        }
+
+        
+                                  
         //enemy spawner
-        if (enemyCount == 0)
+        if (enemyCount == 0 && !BOSSMODE)
         {
             if (spawnPos == 1200)
             {
-                spawnPos = 100;
+                spawnPos = 200;
             }
             else
             {
                 spawnPos = 1200;
+                if (enemySwap == 1)spawnPos = 500;
+                if (enemySwap == 2)spawnPos = 1000;
+
+
             }
             
-            enemy = skull_ent_new(vector2d(spawnPos, 300));
+            if (enemySwap == 0)enemy = skull_ent_new(vector2d(spawnPos, 300));
+            else if (enemySwap == 2)enemy = shooter_ent_new(vector2d(spawnPos, 500));
+            else { enemy = aimbot_ent_new(vector2d(spawnPos, 500)); }
             enemyCount = 1;
         }
 
+        //enemy swapper for demo
+        if (keys[SDL_SCANCODE_6])
+        {
+            enemySwap = 1;
+        }
+        if (keys[SDL_SCANCODE_7])
+        {
+            enemySwap = 2;
+        }
 
                                   
         //player switch: 1 for punisher and 2 for venom
@@ -211,26 +253,57 @@ int main(int argc, char * argv[])
         if (player->isAttacking == 2 && colliding)
         {
             enemy->health -= 2;
+            player->isAttacking = 0;
         }
 
         if (player->isAttacking == 3 && colliding)
         {
             enemy->health -= 3;
+            player->isAttacking = 0;
         }
 
         //enemy target update
-        enemy->target.x = player->position.x;
-        enemy->target.y = player->position.y;
+        if (!player->invisible && enemySwap != 2)
+        {
+            enemy->target.x = player->position.x;
+            enemy->target.y = player->position.y;
+        }
         
+
+        
+        if (enemySwap == 0)
+        {
+            if (colliding)
+            {
+                timer++;
+                if (timer >= 90)
+                {
+                    player->health--;
+                    timer = 0;
+                }
+            }
+            else
+            {
+                timer = 0;
+            }
+        }
+        
+
+        if (enemySwap == 2)
+        {
+            if (enemy->position.y <= 200)
+                gf2d_sprite_draw_image(stamina_potion, vector2d(1100, enemy->position.y));
+
+        }
+
         //hurt player
-        if (count == 0 && keys[SDL_SCANCODE_O])
+        if (enemy->isAttacking == 1 && count == 0 && colliding)
         {
             player->health -= 1;
-            player->stamina -= 1;
             count = 1;
         }
 
-        if (keys[SDL_SCANCODE_R])
+        if (enemy->isAttacking == 0)
         {
             count = 0;
         }
@@ -240,6 +313,9 @@ int main(int argc, char * argv[])
             slog("%i", highscore);
         }
         
+
+
+
 
         //give stamina back
         staminaCount++;
@@ -261,6 +337,8 @@ int main(int argc, char * argv[])
         {
             highscore_save(score);
         }
+
+        if (player->health <= 0) done = 1;
 
        
         //player bounds

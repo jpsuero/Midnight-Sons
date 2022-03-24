@@ -22,13 +22,13 @@ void skull_think(Entity *self)
     }
 
 
-    direction.x = self->target.x - self->position.x;
-    direction.y = self->target.y - self->position.y;
+    direction.x = self->target.x - self->position.x+20;
+    direction.y = self->target.y - self->position.y+20;
     angle = vector2d_angle(direction) - 90;
     //self->rotation.z = angle;
 
    //hitbox movement
-    self->hitbox.x = self->position.x - 40;
+    self->hitbox.x = self->position.x - 0;
     self->hitbox.y = self->position.y - 60;
     
     keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
@@ -39,6 +39,8 @@ void skull_think(Entity *self)
         vector2d_set_magnitude(&direction,2);
         vector2d_copy(self->velocity,direction);
     }
+
+   
 
 }
 
