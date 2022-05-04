@@ -61,7 +61,7 @@ void magik_think(Entity* self)
 		self->player_state = 2;
 		self->position.x += 3;
 		self->flip = vector2d(0, 0);
-		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
+		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 250, 156, 1);
 	}
 	//move player backwards
 	if (keys[SDL_SCANCODE_A])
@@ -70,7 +70,7 @@ void magik_think(Entity* self)
 		self->position.x -= 3;
 		self->flip = vector2d(1, 0);
 		
-		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
+		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 250, 156, 1);
 
 	}
 	//move player up
@@ -78,14 +78,14 @@ void magik_think(Entity* self)
 	{
 		self->player_state = 2;
 		self->position.y -= 3;
-		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
+		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 250, 156, 1);
 	}
 	//move player down
 	if (keys[SDL_SCANCODE_S])
 	{
 		self->player_state = 2;
 		self->position.y += 3;
-		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 150, 156, 10);
+		self->sprite = gf2d_sprite_load_all("images/venom_walk.png", 250, 156, 1);
 	}
 
 	//player jump 
@@ -109,7 +109,7 @@ void magik_think(Entity* self)
 		self->isAttacking = 2;
 		self->canAttack = 0;
 		self->stamina -= 2;
-		self->sprite = gf2d_sprite_load_all("images/venom_attack2.png", 165.14, 220, 7);
+		self->sprite = gf2d_sprite_load_all("images/venom_slash.png", 168, 184, 1);
 	}
 	if (keys[SDL_SCANCODE_F] && self->canAttack == 1 && self->stamina == 5)
 	{
@@ -125,7 +125,7 @@ void magik_think(Entity* self)
 		if(self->frame >=4 && self->frame<=6)self->isAttacking = 3;
 		else{ self->canAttack = 0; }
 		self->stamina -= 3;
-		self->sprite = gf2d_sprite_load_all("images/venom_attack3.png", 311, 161, 8);
+		self->sprite = gf2d_sprite_load_all("images/venom_attack3.png", 323, 135, 1);
 	}
 	if (keys[SDL_SCANCODE_X] && self->canAttack == 1)
 	{
@@ -140,7 +140,7 @@ void magik_think(Entity* self)
 	if (!keys[SDL_SCANCODE_X] && !keys[SDL_SCANCODE_S] && !keys[SDL_SCANCODE_W] && !keys[SDL_SCANCODE_A] && !keys[SDL_SCANCODE_D] && !keys[SDL_SCANCODE_SPACE] && !keys[SDL_SCANCODE_E] && !keys[SDL_SCANCODE_Q] && !keys[SDL_SCANCODE_F] && !keys[SDL_SCANCODE_G])
 	{
 		self->player_state = 1;
-		self->sprite = gf2d_sprite_load_all("images/venom_idle.png", 173, 143, 13);
+		self->sprite = gf2d_sprite_load_all("images/venom_idle.png", 200, 143, 1);
 		self->frame = (self->frame + 0.01);
 		self->isAttacking = 0;
 		self->canAttack = 1;
@@ -164,8 +164,8 @@ Entity* venom_new(Vector2D position)
 	ent->draw_offset.y = -64;
 	ent->rotation.x = 64;
 	ent->rotation.y = 64;
-	ent->draw_scale.x = 1.5;
-	ent->draw_scale.y = 1.5;
+	ent->draw_scale.x = 1;
+	ent->draw_scale.y = 1;
 	ent->frame_limit = 20;
 	ent->player_state = 0;
 	ent->health = 5;

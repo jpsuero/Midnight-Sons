@@ -29,6 +29,7 @@
 int main(int argc, char * argv[])
 {
     /*variable declarations*/
+    int debug = 0;
     int highscore = 0;
     int score = 0;
     int done = 0;
@@ -50,9 +51,10 @@ int main(int argc, char * argv[])
     int mx,my;
     int position = 70;
     float mf = 0;
-    Sprite *mouse;
+    Sprite* mouse;
     Vector4D mouseColor = {255,100,255,200};
     TileMap *tilemap;
+    Entity* portal;
     Entity* player;
     Entity* enemy;
     Entity* bg;
@@ -86,6 +88,7 @@ int main(int argc, char * argv[])
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
     player = venom_new(vector2d(300, 500));
     player->health = 5;
+    portal = portal_ent_new(vector2d(7000, 500));
     enemy = skull_ent_new(vector2d(spawnPos, 300));
     icon = gf2d_sprite_load_image("images/venom_icon.png");
     health = gf2d_sprite_load_image("images/health.png");
@@ -119,18 +122,17 @@ int main(int argc, char * argv[])
         gf2d_graphics_clear_screen();// clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
             //backgrounds drawn first
-        //gf2d_sprite_draw_image(sprite, vector2d(player->position.x *-1, 0));
             // draw other game elements
         
             //tilemap_draw(tilemap);
             entity_manager_draw_all();
             //UI elements last
-           // gf2d_draw_rect(player->hitbox, vector4d(255,0,0,200));
-           // gf2d_draw_rect(enemy->hitbox, mouseColor);
-  
+            //gf2d_draw_rect(player->hitbox, vector4d(0, 0, 255, 200));
+            //gf2d_draw_rect(enemy->hitbox, vector4d(255, 0, 0, 255));
             //gf2d_draw_rect(BOSS->hitbox, mouseColor);
             //health manager
-            if (player->health == 5)
+            
+                if (player->health == 5)
             {
                 gf2d_sprite_draw_image(health, vector2d(125, 50));
                 gf2d_sprite_draw_image(health, vector2d(175, 50));
@@ -233,7 +235,7 @@ int main(int argc, char * argv[])
             
             if (enemySwap == 0)enemy = skull_ent_new(vector2d(spawnPos, 300));
             else if (enemySwap == 2)enemy = shooter_ent_new(vector2d(200, 500));
-            else { enemy = aimbot_ent_new(vector2d(spawnPos, 500)); }
+            else { enemy = aimbot_ent_new(vector2d(2000, 500)); }
             enemyCount = 1;
         }
 
@@ -273,19 +275,19 @@ int main(int argc, char * argv[])
         
 
         //player attacks
-        if (player->isAttacking == 1 && colliding)
+        if (player->isAttacking == 1 && colliding && player->frame > 2)
         {
             enemy->health -= 1 * player->strength;
             player->isAttacking = 0;
         }
         
-        if (player->isAttacking == 2 && colliding)
+        if (player->isAttacking == 2 && colliding && player->frame > 2)
         {
             enemy->health -= 2 * player->strength;
             player->isAttacking = 0;
         }
 
-        if (player->isAttacking == 3 && colliding)
+        if (player->isAttacking == 3 && colliding && player->frame > 2)
         {
             enemy->health -= 3 * player->strength;
             player->isAttacking = 0;
@@ -399,9 +401,17 @@ int main(int argc, char * argv[])
 
         if (player->health <= 0) done = 1;
 
+        if (bg->position.x <= -5000)
+        {
+            player->position = vector2d(300, 500);
+            bg->sprite = gf2d_sprite_load_image("images/backgrounds/xmenarcade.png");
+            portal->position=(vector2d(7000, 500));
+            bg->position = vector2d(0, 0);
+        }
+
        
         //player bounds
-        if (player->position.x >= 1000)player->position.x -= 3;
+        if (player->position.x >= 800)player->position.x -= 3;
         if (player->position.x <= 100)player->position.x += 3;
         if (player->position.y >= 625)player->position.y -= 3;
         if (player->position.y <= 320)player->position.y += 3;
@@ -411,4 +421,5 @@ int main(int argc, char * argv[])
     slog("---==== END ====---");
     return 0;
 }
+
 /*eol@eof*/

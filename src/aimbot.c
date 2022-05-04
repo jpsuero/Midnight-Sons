@@ -5,7 +5,6 @@
 void aimbot_think(Entity* self)
 {
     Vector2D direction;
-    int mx, my;
     float angle;
     const Uint8* keys;
     if (!self)return;
@@ -44,15 +43,16 @@ void aimbot_think(Entity* self)
             }
             else { self->isAttacking = 0; }
             self->sprite = gf2d_sprite_load_all("images/aimbots_knife.png", 80, 50, 1);
-            // move forward
-           // vector2d_set_magnitude(&direction, 2);
-           // vector2d_copy(self->velocity, direction);
+            self->draw_scale.x = 3;
+            self->draw_scale.y = 3;
         }
         else
         {
             self->isAttacking = 0;
             self->frame_limit = 4;
             self->sprite = gf2d_sprite_load_all("images/aimbot_idle.png", 41, 53, 4);
+            self->draw_scale.x = 1.5;
+            self->draw_scale.y = 1.5;
         }
     }
     else
@@ -69,16 +69,27 @@ void aimbot_think(Entity* self)
             }
             else { self->isAttacking = 0; }
             self->sprite = gf2d_sprite_load_all("images/aimbots_knife.png", 80, 50, 1);
-            // move forward
-           // vector2d_set_magnitude(&direction, 2);
-           // vector2d_copy(self->velocity, direction);
+            self->draw_scale.x = 3;
+            self->draw_scale.y = 3;
         }
         else
         {
             self->isAttacking = 0;
             self->frame_limit = 4;
             self->sprite = gf2d_sprite_load_all("images/aimbot_idle.png", 41, 53, 4);
+            self->draw_scale.x = 1.5;
+            self->draw_scale.y = 1.5;
         }
+    }
+
+    //move with bg
+    if (keys[SDL_SCANCODE_D])
+    {
+        self->position.x -= 4;
+    }
+    if (keys[SDL_SCANCODE_A])
+    {
+        self->position.x += 4;
     }
     
 
@@ -99,8 +110,8 @@ Entity* aimbot_ent_new(Vector2D position)
     ent->draw_offset.y = -64;
     ent->rotation.x = 64;
     ent->rotation.y = 64;
-    ent->draw_scale.x = 3;
-    ent->draw_scale.y = 3;
+    ent->draw_scale.x = 1;
+    ent->draw_scale.y = 1;
     ent->hitbox.w = 75;
     ent->hitbox.h = 100;
     ent->health = 2;

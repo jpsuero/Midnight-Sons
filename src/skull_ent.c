@@ -9,7 +9,7 @@ void skull_think(Entity *self)
     float angle;
     const Uint8 *keys;
     if (!self)return;
-    self->frame = (self->frame + 0.1);
+    self->frame = (self->frame + 0.05);
     if (self->frame >= 4)self->frame = 0;
     
     if (self->position.x < self->target.x)
@@ -28,14 +28,14 @@ void skull_think(Entity *self)
     //self->rotation.z = angle;
 
    //hitbox movement
-    self->hitbox.x = self->position.x - 0;
+    self->hitbox.x = self->position.x - 60;
     self->hitbox.y = self->position.y - 60;
     
     keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
     
    if(self->target.x != self->position.x)
     {
-        // move forward
+        // move towards target
         vector2d_set_magnitude(&direction,2);
         vector2d_copy(self->velocity,direction);
     }
@@ -62,9 +62,9 @@ Entity *skull_ent_new(Vector2D position, Vector2D hero)
     ent->health = 3;
     ent->draw_scale.x = 3;
     ent->draw_scale.y = 3;
-    ent->hitbox.w = 75;
+    ent->hitbox.w = 100;
     ent->hitbox.h = 100;
-    ent->health = 3;
+    ent->health = 1;
     ent->flip = vector2d(0, 0);
     
 

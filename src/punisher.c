@@ -48,7 +48,7 @@ void punisher_think(Entity* self)
 
 	//hitbox movement
 	self->hitbox.x = self->position.x-50;
-	self->hitbox.y = self->position.y-60;
+	self->hitbox.y = self->position.y-80;
 
 
 	//get the keyboard state
@@ -66,13 +66,10 @@ void punisher_think(Entity* self)
 	//move player backwards
 	if (keys[SDL_SCANCODE_A])
 	{
-		
-
 		self->player_state = 2;
 		self->position.x -= self->speed;
 		self->flip = vector2d(1, 0);
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
-
 	}
 	//move player up
 	if (keys[SDL_SCANCODE_W])
@@ -80,6 +77,7 @@ void punisher_think(Entity* self)
 		//self->frame_limit = 6;
 		self->player_state = 2;
 		self->position.y -= self->speed;
+		self->position.x -= 1;
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
 	}
 	//move player down
@@ -87,6 +85,7 @@ void punisher_think(Entity* self)
 	{
 		self->player_state = 2;
 		self->position.y += self->speed;
+		self->position.x += 1;
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
 	}
 
@@ -153,9 +152,6 @@ void punisher_think(Entity* self)
 		self->isAttacking = 0;
 		self->canAttack = 1;
 	}
-
-
-
 }
 
 Entity* punisher_new(Vector2D position)
@@ -180,8 +176,8 @@ Entity* punisher_new(Vector2D position)
 	ent->health = 5;
 	ent->strength = 1;
 	ent->stamina = 5;
-	ent->hitbox.w = 100;
-	ent->hitbox.h = 150;
+	ent->hitbox.w = 200;
+	ent->hitbox.h = 200;
 	ent->flip = vector2d(0, 0);
 	ent->speed = 3;
 
@@ -189,7 +185,4 @@ Entity* punisher_new(Vector2D position)
 	return ent;
 
 }
-
-
-
 //end of file

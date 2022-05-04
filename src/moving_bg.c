@@ -12,12 +12,12 @@ void moving_bg_think(Entity* self)
 	//move player forward
 	if (keys[SDL_SCANCODE_D])
 	{
-		self->position.x -= 5;
+		self->position.x -= 4;
 	}
 	//move player backwards
 	if (keys[SDL_SCANCODE_A])
 	{
-		self->position.x += 5;
+		self->position.x += 4;
 	}
 }
 
