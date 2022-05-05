@@ -46,9 +46,18 @@ void punisher_think(Entity* self)
 		self->frame_limit = 7;
 	}
 
-	//hitbox movement
-	self->hitbox.x = self->position.x-50;
-	self->hitbox.y = self->position.y-80;
+	//hitbox movement, flips with player flip
+	if (self->flip.x == 0)
+	{
+		self->hitbox.x = self->position.x - 50;
+		self->hitbox.y = self->position.y - 80;
+	}
+	else
+	{
+		self->hitbox.x = self->position.x - 150;
+		self->hitbox.y = self->position.y - 80;
+	}
+	
 
 
 	//get the keyboard state

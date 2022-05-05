@@ -1,11 +1,18 @@
 #include "simple_logger.h"
 #include "venom_ent.h"
-
+#include "gfc_audio.h"
+#include <SDL.h>
 void magik_think(Entity* self)
 {
 	//declare think variables
 	float angle;
 	const Uint8* keys;
+	Sound* punch, *swipe, *chomp, *heal, *poison;
+	punch = gfc_sound_load("SFX/punch.wav", 10, 0);
+	swipe = gfc_sound_load("SFX/swipe.wav", 10, 0);
+	chomp = gfc_sound_load("SFX/chomp.mp3", 10, 0);
+	heal = gfc_sound_load("SFX/venom_heal.wav", 10, 0);
+
 	//return if not magik ent
 	if (!self)return;
 	self->frame = (self->frame + 0.1);
@@ -13,8 +20,17 @@ void magik_think(Entity* self)
 	if (self->frame >= self->frame_limit)self->frame = 0;
 
 	//hitbox movement
-	self->hitbox.x = self->position.x - 40;
-	self->hitbox.y = self->position.y - 60;
+	if (self->flip.x == 0)
+	{
+		self->hitbox.x = self->position.x - 20;
+		self->hitbox.y = self->position.y - 80;
+	}
+	else
+	{
+		self->hitbox.x = self->position.x - 130;
+		self->hitbox.y = self->position.y - 80;
+	}
+	
 
 
 	//animator
@@ -94,38 +110,43 @@ void magik_think(Entity* self)
 		self->player_state = 3;
 		self->sprite = gf2d_sprite_load_all("images/Gambit_jump.png", 93, 106, 3);
 	}
-
+	//punch attack
 	if (keys[SDL_SCANCODE_E] && self->canAttack == 1)
 	{
+		self->sprite = gf2d_sprite_load_all("images/venom_attack1.png", 212, 131, 3);
 		self->player_state = 4;
 		self->isAttacking = 1;
+		gfc_sound_play(punch, 0, 10,-1, -1);
 		self->canAttack = 0;
-		self->sprite = gf2d_sprite_load_all("images/venom_attack1.png", 212, 131, 3);
-
 	}
+	//swipe
 	if (keys[SDL_SCANCODE_Q] && self->canAttack == 1 && self->stamina >= 2)
 	{
+		self->sprite = gf2d_sprite_load_all("images/venom_slash.png", 168, 184, 1);
 		self->player_state = 5;
 		self->isAttacking = 2;
 		self->canAttack = 0;
 		self->stamina -= 2;
-		self->sprite = gf2d_sprite_load_all("images/venom_slash.png", 168, 184, 1);
+		gfc_sound_play(swipe, 0, 10, -1, -1);
 	}
+	//heal
 	if (keys[SDL_SCANCODE_F] && self->canAttack == 1 && self->stamina == 5)
 	{
+		self->sprite = gf2d_sprite_load_all("images/venom_attack4.png", 246, 191, 18);
 		self->player_state = 6;
 		self->health = 5;
 		self->canAttack = 0;
 		self->stamina -= 5;
-		self->sprite = gf2d_sprite_load_all("images/venom_attack4.png", 246, 191, 18);
+		gfc_sound_play(heal, 0, 10, -1, -1);
 	}
+	//chomp
 	if (keys[SDL_SCANCODE_G] && self->canAttack == 1 && self->stamina >= 3)
 	{
-		self->player_state = 7;
-		if(self->frame >=4 && self->frame<=6)self->isAttacking = 3;
-		else{ self->canAttack = 0; }
-		self->stamina -= 3;
 		self->sprite = gf2d_sprite_load_all("images/venom_attack3.png", 323, 135, 1);
+		self->player_state = 7;
+		self->isAttacking = 3;
+		self->stamina -= 3;
+		gfc_sound_play(chomp, 0, 10, -1, -1);
 	}
 	if (keys[SDL_SCANCODE_X] && self->canAttack == 1)
 	{

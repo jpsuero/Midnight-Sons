@@ -23,17 +23,17 @@ void skull_think(Entity *self)
 
 
     direction.x = self->target.x - self->position.x+20;
-    direction.y = self->target.y - self->position.y+20;
+    direction.y = self->target.y - self->position.y-60;
     angle = vector2d_angle(direction) - 90;
     //self->rotation.z = angle;
 
    //hitbox movement
     self->hitbox.x = self->position.x - 60;
-    self->hitbox.y = self->position.y - 60;
+    self->hitbox.y = self->position.y;
     
     keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
     
-   if(self->target.x != self->position.x)
+   if(self->target.x != self->position.x + 10)
     {
         // move towards target
         vector2d_set_magnitude(&direction,2);

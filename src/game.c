@@ -1,10 +1,12 @@
 #include <SDL.h>
+#include <SDL_mixer.h>
 
 #include "simple_logger.h"
 
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
 #include "gf2d_draw.h"
+#include "gfc_audio.h"
 
 #include "entity.h"
 #include "skull_ent.h"
@@ -24,6 +26,7 @@
 #include "stamina_pickup.h"
 #include "speed_pickup.h"
 #include "strength_pickup.h"
+#include "Portal.h"
 
 
 int main(int argc, char * argv[])
@@ -64,6 +67,8 @@ int main(int argc, char * argv[])
     Entity* speed_pickup;
     Entity* stamina_pickup;
     Entity* strength_pickup;
+
+    Mix_Music* music;
     
     
     /*program initializtion*/
@@ -81,6 +86,7 @@ int main(int argc, char * argv[])
     gf2d_sprite_init(1024);
     tile_set_manager_init(16);
     entity_manager_init(1024);
+    gfc_audio_init(256, 16, 4, 1, 1, 1);
     SDL_ShowCursor(SDL_DISABLE);
     
     /*demo setup*/
@@ -99,6 +105,8 @@ int main(int argc, char * argv[])
     stamina_pickup = stamina_ent_new(vector2d(3000, 400));
     speed_pickup = speed_ent_new(vector2d(4000, 650));
     strength_pickup = strength_ent_new(vector2d(5000, 400));
+    music = Mix_LoadMUS("music/UAMenu.mp3");
+    Mix_PlayMusic(music, -1);
 
     //tilemap = tilemap_load("levels/testlevel.json");
 
@@ -127,12 +135,12 @@ int main(int argc, char * argv[])
             //tilemap_draw(tilemap);
             entity_manager_draw_all();
             //UI elements last
-            //gf2d_draw_rect(player->hitbox, vector4d(0, 0, 255, 200));
-            //gf2d_draw_rect(enemy->hitbox, vector4d(255, 0, 0, 255));
+            gf2d_draw_rect(player->hitbox, vector4d(0, 0, 255, 200));
+            gf2d_draw_rect(enemy->hitbox, vector4d(255, 0, 0, 255));
             //gf2d_draw_rect(BOSS->hitbox, mouseColor);
             //health manager
             
-                if (player->health == 5)
+            if (player->health == 5)
             {
                 gf2d_sprite_draw_image(health, vector2d(125, 50));
                 gf2d_sprite_draw_image(health, vector2d(175, 50));
@@ -279,6 +287,10 @@ int main(int argc, char * argv[])
         {
             enemy->health -= 1 * player->strength;
             player->isAttacking = 0;
+            if (player->frame == 1)
+            {
+                player->sprite = gf2d_sprite_load_all("images/venom_idle.png", 200, 143, 1);
+            }
         }
         
         if (player->isAttacking == 2 && colliding && player->frame > 2)
@@ -403,10 +415,13 @@ int main(int argc, char * argv[])
 
         if (bg->position.x <= -5000)
         {
+            Mix_HaltMusic();
             player->position = vector2d(300, 500);
             bg->sprite = gf2d_sprite_load_image("images/backgrounds/xmenarcade.png");
             portal->position=(vector2d(7000, 500));
             bg->position = vector2d(0, 0);
+            music = Mix_LoadMUS("music/KHBattle.mp3");
+            Mix_PlayMusic(music, -1);
         }
 
        
@@ -418,6 +433,9 @@ int main(int argc, char * argv[])
         if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
+
+    Mix_HaltMusic();
+    Mix_FreeMusic(music);
     slog("---==== END ====---");
     return 0;
 }

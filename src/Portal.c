@@ -18,12 +18,12 @@ void portal_think(Entity* self)
 
     if (keys[SDL_SCANCODE_D])
     {
-        self->position.x -= 4;
+        self->position.x -= 5;
     }
     //move player backwards
     if (keys[SDL_SCANCODE_A])
     {
-        self->position.x += 4;
+        self->position.x += 5;
     }
 
     //hitbox movement
