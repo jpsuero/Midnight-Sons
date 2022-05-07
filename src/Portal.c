@@ -16,15 +16,16 @@ void portal_think(Entity* self)
 
     if (!self)return;
 
-    if (keys[SDL_SCANCODE_D])
-    {
-        self->position.x -= 5;
-    }
-    //move player backwards
-    if (keys[SDL_SCANCODE_A])
-    {
-        self->position.x += 5;
-    }
+    //move backwards
+	if (self->speed>0)
+	{
+		self->position.x -= 5;
+	}
+	//move forwards
+	if (self->speed<0)
+	{
+		self->position.x += 5;
+	}
 
     //hitbox movement
     self->hitbox.x = self->position.x;

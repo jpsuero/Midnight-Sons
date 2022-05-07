@@ -68,9 +68,9 @@ int main(int argc, char * argv[])
     Entity* stamina_pickup;
     Entity* strength_pickup;
 
+    //audio
     Mix_Music* music;
-    
-    
+
     /*program initializtion*/
     init_logger("gf2d.log");
     slog("---==== BEGIN ====---");
@@ -126,6 +126,7 @@ int main(int argc, char * argv[])
         staminaCollision = collision_check(player, stamina_pickup);
         speedCollision = collision_check(player, speed_pickup);
         strengthCollision = collision_check(player, strength_pickup);
+
         
         gf2d_graphics_clear_screen();// clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
@@ -308,10 +309,45 @@ int main(int argc, char * argv[])
         //enemy target update
         if (!player->invisible && enemySwap != 2)
         {
-            enemy->target.x = player->position.x;
-            enemy->target.y = player->position.y;
+            enemy->target = player->position;
         }
         
+        //background and more update
+        if (player->velocity.x > 0)
+        {
+            bg->speed = 1;
+            chair->speed = 1;
+            health_pickup->speed = 1;
+            speed_pickup->speed = 1;
+            stamina_pickup->speed = 1;
+            strength_pickup->speed = 1;
+            portal->speed = 1;
+            enemy->speed = 1;
+        }
+        if (player->velocity.x < 0)
+        {
+            bg->speed = -1;
+            chair->speed = -1;
+            health_pickup->speed = -1;
+            speed_pickup->speed = -1;
+            stamina_pickup->speed = -1;
+            strength_pickup->speed = -1;
+            portal->speed = -1;
+            enemy->speed = -1;
+        }
+        if (player->velocity.x == 0)
+        {
+            bg->speed = 0;
+            chair->speed = 0;
+            health_pickup->speed = 0;
+            speed_pickup->speed = 0;
+            stamina_pickup->speed = 0;
+            strength_pickup->speed = 0;
+            portal->speed = 0;
+            enemy->speed = 0;
+
+        }
+
         //skull hurt player
         if (enemySwap == 0)
         {

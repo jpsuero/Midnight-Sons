@@ -28,7 +28,7 @@ void shooter_think(Entity* self)
 
     if (self->position.y <= 200)
     {
-        self->target = vector2d(1000, 650);
+        self->target = vector2d(1000, 600);
        
     }
     if (self->position.y >= 650)

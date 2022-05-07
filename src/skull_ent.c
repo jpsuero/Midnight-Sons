@@ -22,9 +22,9 @@ void skull_think(Entity *self)
     }
 
 
-    direction.x = self->target.x - self->position.x+20;
+    direction.x = self->target.x - self->position.x+50;
     direction.y = self->target.y - self->position.y-60;
-    angle = vector2d_angle(direction) - 90;
+    angle = vector2d_angle(direction) - 45;
     //self->rotation.z = angle;
 
    //hitbox movement

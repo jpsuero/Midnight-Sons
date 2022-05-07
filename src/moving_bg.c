@@ -9,13 +9,13 @@ void moving_bg_think(Entity* self)
 	//get the keyboard state
 	keys = SDL_GetKeyboardState(NULL); //get the keyboard for this frame
 
-	//move player forward
-	if (keys[SDL_SCANCODE_D])
+	//move backwards
+	if (self->speed>0)
 	{
 		self->position.x -= 4;
 	}
-	//move player backwards
-	if (keys[SDL_SCANCODE_A])
+	//move forwards
+	if (self->speed<0)
 	{
 		self->position.x += 4;
 	}

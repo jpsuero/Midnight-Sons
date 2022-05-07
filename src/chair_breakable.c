@@ -13,12 +13,13 @@ void chair_think(Entity* self)
     
     if (!self)return;
 
-    if (keys[SDL_SCANCODE_D])
+    //move backwards
+    if (self->speed > 0)
     {
         self->position.x -= 4;
     }
-    //move player backwards
-    if (keys[SDL_SCANCODE_A])
+    //move forwards
+    if (self->speed < 0)
     {
         self->position.x += 4;
     }

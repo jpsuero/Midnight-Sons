@@ -1,11 +1,22 @@
 #include "simple_logger.h"
 #include "punisher_ent.h"
 #include "gf2d_draw.h"
+#include "gfc_audio.h"
 
 void punisher_think(Entity* self)
 {
 	//declare think variables
 	const Uint8* keys;
+	Sound* punch, * kick, * throw, * shoot, * patch;
+	punch = gfc_sound_load("SFX/punch.wav", 10, 0);
+	kick = gfc_sound_load("SFX/swipe.wav", 10, 0);
+	throw = gfc_sound_load("SFX/chomp.mp3", 10, 0);
+	shoot = gfc_sound_load("SFX/venom_heal.wav", 10, 0);
+	patch = gfc_sound_load("SFX/slurp.wav", 10, 0);
+	
+	//joystick movement
+	int punching = 0, swiping = 0, chomping = 0, movingR = 0, movingL = 0, movingU = 0, movingD = 0, jumping = 0, poisoning = 0, healing = 0;
+
 	//return if not punish ent
 	if (!self)return;
 	self->frame = (self->frame + 0.1);
@@ -58,55 +69,169 @@ void punisher_think(Entity* self)
 		self->hitbox.y = self->position.y - 80;
 	}
 	
+	//joystick input
+	//joystick
+	SDL_Init(SDL_INIT_JOYSTICK);
+
+	SDL_Joystick* joystick;
+
+	SDL_JoystickEventState(SDL_ENABLE);
+	joystick = SDL_JoystickOpen(0);
+	if (joystick == NULL)
+	{
+		slog("no joystick connected");
+	}
+
+	SDL_Event event;
+
+	while (SDL_PollEvent(&event) != 0)
+	{
+		if (event.type == SDL_QUIT)
+		{
+			entity_free(self);
+		}
+
+		else if (event.type == SDL_JOYAXISMOTION)
+		{
+			if (event.jaxis.which == 0)
+			{
+				//horizontal movement
+				if (event.jaxis.axis == 0)
+				{
+					if (event.jaxis.value < -3200)
+					{
+						movingL = 1;
+					}
+					else if (event.jaxis.value > 3200)
+					{
+						movingR = 1;
+					}
+					else
+					{
+						self->velocity.x = 0;
+						movingL = 0;
+						movingR = 0;
+					}
+				}
+				//vertical movement
+				if (event.jaxis.axis == 1)
+				{
+					if (event.jaxis.value < -3200)
+					{
+						movingU = 1;
+					}
+					else if (event.jaxis.value > 3200)
+					{
+						movingD = 1;
+					}
+					else
+					{
+						self->velocity.y = 0;
+						movingD = 0;
+						movingU = 0;
+					}
+				}
+			}
+		}
+		else if (event.type == SDL_JOYBUTTONDOWN)
+		{
+			if (event.jbutton.button == 2)
+			{
+				punching = 1;
+			}
+			else if (event.jbutton.button == 3)
+			{
+				swiping = 1;
+			}
+			else if (event.jbutton.button == 1)
+			{
+				chomping = 1;
+			}
+			else if (event.jbutton.button == 9)
+			{
+				healing = 1;
+			}
+			else if (event.jbutton.button == 0)
+			{
+				jumping = 1;
+			}
+
+		}
+		else if (SDL_JOYBUTTONUP)
+		{
+			if (event.jbutton.button == 2)
+			{
+				punching = 0;
+				self->canAttack = 1;
+			}
+			else if (event.jbutton.button == 3)
+			{
+				swiping = 0;
+				self->canAttack = 1;
+			}
+			else if (event.jbutton.button == 1)
+			{
+				chomping = 0;
+				self->canAttack = 1;
+			}
+			else if (event.jbutton.button == 9)
+			{
+				healing = 0;
+				self->canAttack = 1;
+			}
+			else if (event.jbutton.button == 0)
+			{
+				jumping = 0;
+				self->canAttack = 1;
+			}
+		}
+	}
+
 
 
 	//get the keyboard state
 	keys = SDL_GetKeyboardState(NULL); //get the keyboard for this frame
 
 	//move player forward
-	if (keys[SDL_SCANCODE_D])
+	if (keys[SDL_SCANCODE_D] || movingR)
 	{
-		
-		self->player_state = 2;
-		self->position.x += self->speed;
-		self->flip = vector2d(0, 0);
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
+		self->player_state = 2;
+		self->velocity.x = 3;
+		self->flip = vector2d(0, 0);
 	}
 	//move player backwards
-	if (keys[SDL_SCANCODE_A])
+	if (keys[SDL_SCANCODE_A] || movingL)
 	{
-		self->player_state = 2;
-		self->position.x -= self->speed;
-		self->flip = vector2d(1, 0);
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
+		self->player_state = 2;
+		self->velocity.x = -3;
+		self->flip = vector2d(1, 0);
 	}
 	//move player up
-	if (keys[SDL_SCANCODE_W])
+	if (keys[SDL_SCANCODE_W] || movingU)
 	{
-		//self->frame_limit = 6;
-		self->player_state = 2;
-		self->position.y -= self->speed;
-		self->position.x -= 1;
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
+		self->player_state = 2;
+		self->velocity.y = -3;
 	}
 	//move player down
-	if (keys[SDL_SCANCODE_S])
+	if (keys[SDL_SCANCODE_S] || movingD)
 	{
-		self->player_state = 2;
-		self->position.y += self->speed;
-		self->position.x += 1;
 		self->sprite = gf2d_sprite_load_all("images/punisher_walking.png", 84, 99, 12);
+		self->player_state = 2;
+		self->velocity.y = 3;
 	}
 
 	//player jump 
-	if (keys[SDL_SCANCODE_SPACE])
+	if (keys[SDL_SCANCODE_SPACE] || jumping)
 	{
 		self->player_state = 3;
 		self->sprite = gf2d_sprite_load_all("images/Gambit_jump.png", 93, 106, 3);
 
 	}
 	//punisher punch
-	if (keys[SDL_SCANCODE_E] && self->canAttack == 1)
+	if (keys[SDL_SCANCODE_E] || punching && self->canAttack == 1)
 	{
 		self->player_state = 4;
 		self->isAttacking = 1;
@@ -115,7 +240,7 @@ void punisher_think(Entity* self)
 
 	}
 	//punisher kick
-	if (keys[SDL_SCANCODE_Q] && self->canAttack == 1 && self->stamina >= 2)
+	if (keys[SDL_SCANCODE_Q] || swiping && self->canAttack == 1 && self->stamina >= 2)
 	{
 		self->player_state = 5;
 		self->stamina -= 2;
@@ -124,7 +249,7 @@ void punisher_think(Entity* self)
 		self->sprite = gf2d_sprite_load_all("images/punisher_kick.png", 94, 112, 8);
 	}
 	//punisher twirl
-	if (keys[SDL_SCANCODE_F] && self->canAttack == 1 && self->stamina >= 3)
+	if (keys[SDL_SCANCODE_F] || chomping && self->canAttack == 1 && self->stamina >= 3)
 	{
 		self->player_state = 6;
 		self->stamina -= 3;
@@ -153,13 +278,13 @@ void punisher_think(Entity* self)
 	}
 
 	//idle requirements
-	if (!keys[SDL_SCANCODE_X] && !keys[SDL_SCANCODE_S] && !keys[SDL_SCANCODE_W] && !keys[SDL_SCANCODE_A] && !keys[SDL_SCANCODE_D] && !keys[SDL_SCANCODE_SPACE] && !keys[SDL_SCANCODE_E] && !keys[SDL_SCANCODE_Q] && !keys[SDL_SCANCODE_F] && !keys[SDL_SCANCODE_G])
+	if (self->velocity.x == 0 && self->velocity.y == 0 && self->canAttack == 1)
 	{
 		self->player_state = 1;
 		self->sprite = gf2d_sprite_load_all("images/punisher_idle.png", 85, 93, 3);
 		self->frame = (self->frame + 0.01);
 		self->isAttacking = 0;
-		self->canAttack = 1;
+
 	}
 }
 

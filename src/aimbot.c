@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "skull_ent.h"
+#include "gfc_audio.h"
 
 
 void aimbot_think(Entity* self)
@@ -28,7 +29,7 @@ void aimbot_think(Entity* self)
     //self->rotation.z = angle;
 
    //hitbox movement
-    self->hitbox.x = self->position.x + 100;
+    self->hitbox.x = self->position.x + 50;
     self->hitbox.y = self->position.y - 60;
 
     keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
@@ -43,8 +44,8 @@ void aimbot_think(Entity* self)
             }
             else { self->isAttacking = 0; }
             self->sprite = gf2d_sprite_load_all("images/aimbots_knife.png", 80, 50, 1);
-            self->draw_scale.x = 3;
-            self->draw_scale.y = 3;
+            self->draw_scale.x = 2;
+            self->draw_scale.y = 2;
         }
         else
         {
@@ -57,8 +58,6 @@ void aimbot_think(Entity* self)
     }
     else
     {
-        self->hitbox.x = self->position.x+100;
-        self->hitbox.y = self->position.y - 60;
         if ((self->position.x - self->target.x) <= 300)
         {
             self->frame_limit = 15;
@@ -69,8 +68,8 @@ void aimbot_think(Entity* self)
             }
             else { self->isAttacking = 0; }
             self->sprite = gf2d_sprite_load_all("images/aimbots_knife.png", 80, 50, 1);
-            self->draw_scale.x = 3;
-            self->draw_scale.y = 3;
+            self->draw_scale.x = 2;
+            self->draw_scale.y = 2;
         }
         else
         {
@@ -83,11 +82,11 @@ void aimbot_think(Entity* self)
     }
 
     //move with bg
-    if (keys[SDL_SCANCODE_D])
+    if (self->speed > 0)
     {
         self->position.x -= 4;
     }
-    if (keys[SDL_SCANCODE_A])
+    if (self->speed< 0)
     {
         self->position.x += 4;
     }
