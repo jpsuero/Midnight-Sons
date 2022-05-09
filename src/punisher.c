@@ -8,9 +8,9 @@ void punisher_think(Entity* self)
 	//declare think variables
 	const Uint8* keys;
 	Sound* punch, * kick, * throw, * shoot, * patch;
-	punch = gfc_sound_load("SFX/punch.wav", 10, 0);
-	kick = gfc_sound_load("SFX/swipe.wav", 10, 0);
-	throw = gfc_sound_load("SFX/chomp.mp3", 10, 0);
+	punch = gfc_sound_load("SFX/punisher_punch.mp3", 10, 0);
+	kick = gfc_sound_load("SFX/punisher_kick.mp3", 10, 0);
+	throw = gfc_sound_load("SFX/later_bitch.wav", 10, 0);
 	shoot = gfc_sound_load("SFX/venom_heal.wav", 10, 0);
 	patch = gfc_sound_load("SFX/slurp.wav", 10, 0);
 	
@@ -178,6 +178,7 @@ void punisher_think(Entity* self)
 			{
 				healing = 0;
 				self->canAttack = 1;
+				self->invisible = 0;
 			}
 			else if (event.jbutton.button == 0)
 			{
@@ -233,10 +234,11 @@ void punisher_think(Entity* self)
 	//punisher punch
 	if (keys[SDL_SCANCODE_E] || punching && self->canAttack == 1)
 	{
+		self->sprite = gf2d_sprite_load_all("images/punisher_attack1.png", 97, 101, 11);
 		self->player_state = 4;
 		self->isAttacking = 1;
 		self->canAttack = 0;
-		self->sprite = gf2d_sprite_load_all("images/punisher_attack1.png", 97, 101, 11);
+		gfc_sound_play(punch, 0, 10, -1, -1);
 
 	}
 	//punisher kick
@@ -246,15 +248,18 @@ void punisher_think(Entity* self)
 		self->stamina -= 2;
 		self->isAttacking = 2;
 		self->canAttack = 0;
+		gfc_sound_play(kick, 0, 10, -1, -1);
 		self->sprite = gf2d_sprite_load_all("images/punisher_kick.png", 94, 112, 8);
+
 	}
 	//punisher twirl
-	if (keys[SDL_SCANCODE_F] || chomping && self->canAttack == 1 && self->stamina >= 3)
+	if (keys[SDL_SCANCODE_F] || chomping && self->stamina >=2)
 	{
 		self->player_state = 6;
-		self->stamina -= 3;
-		self->isAttacking = 3;
-		self->canAttack = 1;
+		self->stamina -= 2;
+		self->isAttacking = 4;
+		self->canAttack = 0;
+		gfc_sound_play(throw, 0, 10, -1, -1);
 		self->sprite = gf2d_sprite_load_all("images/punisher_twirl.png", 80, 103, 6);
 	}
 	//punisher shotgun
@@ -268,13 +273,9 @@ void punisher_think(Entity* self)
 	}
 
 	//punisher invisible
-	if (keys[SDL_SCANCODE_G])
+	if (keys[SDL_SCANCODE_G] || healing)
 	{
 		self->invisible = 1;
-	}
-	else
-	{
-		self->invisible = 0;
 	}
 
 	//idle requirements

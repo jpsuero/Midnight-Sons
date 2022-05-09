@@ -1,5 +1,7 @@
+#define RAND_MAX =4;
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 
 #include "simple_logger.h"
 
@@ -7,6 +9,7 @@
 #include "gf2d_sprite.h"
 #include "gf2d_draw.h"
 #include "gfc_audio.h"
+#include "gfc_text.h"
 
 #include "entity.h"
 #include "skull_ent.h"
@@ -27,27 +30,41 @@
 #include "speed_pickup.h"
 #include "strength_pickup.h"
 #include "Portal.h"
+#include "eyeball_ent.h"
+#include "shuma_goreth.h"
+#include "hydrant.h"
 
 
 int main(int argc, char * argv[])
 {
     /*variable declarations*/
     int debug = 0;
+    int attack = 0;
+    int attack2 = 0;
+    int level = 0;
     int highscore = 0;
     int score = 0;
     int done = 0;
     int i = 0;
     int count = 0;
+    int ouchCount = 0;
     int enemyCount = 1;
+    int blastCount = 1;
     int staminaCount = 0;
     int enemySwap = 0;
     int colliding;
+    int enemy2col;
+    int blast_collision = 0;
     int bossCollision = 0;
+    int hydrant_collision;
+    int enviroCollsion;
     int chairCollision;
     int healthCollision, speedCollision, staminaCollision, strengthCollision;
     int timer = 0;
     int BOSSMODE = 0;
+    int vountBoss = 0;
     float spawnPos = 1200;
+    float skullHeight = 300;
     const Uint8 * keys;
     Sprite* icon, * health, * stamina;
     
@@ -59,7 +76,8 @@ int main(int argc, char * argv[])
     TileMap *tilemap;
     Entity* portal;
     Entity* player;
-    Entity* enemy;
+    Entity* enemy, * enemy2 = NULL;
+    Entity* eyeball_blast = NULL;
     Entity* bg;
     Entity* BOSS = NULL;
     Entity* chair;
@@ -67,9 +85,11 @@ int main(int argc, char * argv[])
     Entity* speed_pickup;
     Entity* stamina_pickup;
     Entity* strength_pickup;
+    Entity* hydrant;
 
     //audio
     Mix_Music* music;
+    Sound* levelup;
 
     /*program initializtion*/
     init_logger("gf2d.log");
@@ -88,7 +108,16 @@ int main(int argc, char * argv[])
     entity_manager_init(1024);
     gfc_audio_init(256, 16, 4, 1, 1, 1);
     SDL_ShowCursor(SDL_DISABLE);
-    
+
+    //joystick
+    SDL_Init(SDL_INIT_JOYSTICK);
+
+    SDL_Joystick* joystick;
+
+    SDL_JoystickEventState(SDL_ENABLE);
+    joystick = SDL_JoystickOpen(0);
+
+
     /*demo setup*/
     bg = moving_bg_new(vector2d(0, 0));
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
@@ -101,11 +130,13 @@ int main(int argc, char * argv[])
     stamina = gf2d_sprite_load_image("images/stamina.png");
     highscore = highscore_load("levels/testlevel.json");
     chair = chair_ent_new(vector2d(600, 400));
+    hydrant = hydrant_ent_new(vector2d(1500, 330));
     health_pickup = health_ent_new(vector2d(900, 650));
     stamina_pickup = stamina_ent_new(vector2d(3000, 400));
     speed_pickup = speed_ent_new(vector2d(4000, 650));
     strength_pickup = strength_ent_new(vector2d(5000, 400));
     music = Mix_LoadMUS("music/UAMenu.mp3");
+    levelup = gfc_sound_load("SFX/levelup.wav", 10, 0);
     Mix_PlayMusic(music, -1);
 
     //tilemap = tilemap_load("levels/testlevel.json");
@@ -126,6 +157,10 @@ int main(int argc, char * argv[])
         staminaCollision = collision_check(player, stamina_pickup);
         speedCollision = collision_check(player, speed_pickup);
         strengthCollision = collision_check(player, strength_pickup);
+        hydrant_collision = collision_check(player, hydrant);
+        enviroCollsion = collision_check(hydrant, enemy);
+        if (eyeball_blast) {  blast_collision= collision_check(player, eyeball_blast); }
+        if (enemy2) { enemy2col = collision_check(player, enemy2); }
 
         
         gf2d_graphics_clear_screen();// clears drawing buffers
@@ -138,7 +173,12 @@ int main(int argc, char * argv[])
             //UI elements last
             gf2d_draw_rect(player->hitbox, vector4d(0, 0, 255, 200));
             gf2d_draw_rect(enemy->hitbox, vector4d(255, 0, 0, 255));
-            //gf2d_draw_rect(BOSS->hitbox, mouseColor);
+            gf2d_draw_rect(hydrant->hitbox, vector4d(255, 0, 0, 255));
+            if (eyeball_blast)
+            {
+                gf2d_draw_rect(eyeball_blast->hitbox, vector4d(255, 0, 0, 255));
+            }
+            if(BOSS)gf2d_draw_rect(BOSS->hitbox, mouseColor);
             //health manager
             
             if (player->health == 5)
@@ -214,6 +254,7 @@ int main(int argc, char * argv[])
         gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
         
         //BOSS MODE
+        //BOSS MODE
         if (keys[SDL_SCANCODE_L])
         {
             BOSSMODE = 1;
@@ -225,7 +266,8 @@ int main(int argc, char * argv[])
             bossCollision = collision_check(BOSS, player);
             if (bossCollision)player->health = 0;
         }
-                        
+
+
         //enemy spawner
         if (enemyCount == 0 && !BOSSMODE)
         {
@@ -238,28 +280,49 @@ int main(int argc, char * argv[])
                 spawnPos = 1200;
                 if (enemySwap == 1)spawnPos = 500;
                 if (enemySwap == 2)spawnPos = 1000;
-
-
+            }
+            if (skullHeight == 300)
+            {
+                skullHeight = 500;
+            }
+            else
+            {
+                skullHeight = 300;
             }
             
             if (enemySwap == 0)enemy = skull_ent_new(vector2d(spawnPos, 300));
             else if (enemySwap == 2)enemy = shooter_ent_new(vector2d(200, 500));
-            else { enemy = aimbot_ent_new(vector2d(2000, 500)); }
+            else if (enemySwap == 1) { enemy = aimbot_ent_new(vector2d(1500, skullHeight)); }
+            else if (enemySwap == 4)enemy = shuma_ent_new(vector2d(200, 500));
+            else { enemy = eyeball_ent_new(vector2d(1500, skullHeight)); }
             enemyCount = 1;
         }
 
         //enemy swapper for demo
         if (keys[SDL_SCANCODE_6])
         {
+            entity_free(enemy);
             enemySwap = 1;
         }
         if (keys[SDL_SCANCODE_7])
         {
+            entity_free(enemy);
             enemySwap = 2;
         }
         if (keys[SDL_SCANCODE_8])
         {
+            entity_free(enemy);
             enemySwap = 0;
+        }
+        if (keys[SDL_SCANCODE_5])
+        {
+            entity_free(enemy);
+            enemySwap = 3;
+        }
+        if (keys[SDL_SCANCODE_4])
+        {
+            entity_free(enemy);
+            enemySwap = 4;
         }
 
         if (keys[SDL_SCANCODE_K])
@@ -288,10 +351,6 @@ int main(int argc, char * argv[])
         {
             enemy->health -= 1 * player->strength;
             player->isAttacking = 0;
-            if (player->frame == 1)
-            {
-                player->sprite = gf2d_sprite_load_all("images/venom_idle.png", 200, 143, 1);
-            }
         }
         
         if (player->isAttacking == 2 && colliding && player->frame > 2)
@@ -305,12 +364,50 @@ int main(int argc, char * argv[])
             enemy->health -= 3 * player->strength;
             player->isAttacking = 0;
         }
+        //hurt enemy 2
+        if (enemy2)
+        {
+            if (player->isAttacking == 1 && enemy2col && player->frame > 2)
+            {
+                enemy2->health -= 1 * player->strength;
+                player->isAttacking = 0;
+            }
+
+            if (player->isAttacking == 2 && enemy2col && player->frame > 2)
+            {
+                enemy2->health -= 2 * player->strength;
+                player->isAttacking = 0;
+            }
+
+            if (player->isAttacking == 3 && enemy2 && player->frame > 2)
+            {
+                enemy2->health -= 3 * player->strength;
+                player->isAttacking = 0;
+            }
+        }
+        
+        
+        //player throw
+        if (player->isAttacking == 4 && colliding && player->frame > 2)
+        {
+            enemy->thrown = 1;
+        }
+        
+        if (enemy->thrown)
+        {
+                enemy->draw_scale.x +=1;
+                enemy->draw_scale.y +=1;
+                enemy->velocity.y - 1;
+                enemy->velocity.x = 0;
+        }
+
 
         //enemy target update
-        if (!player->invisible && enemySwap != 2)
+        if (!player->invisible && enemySwap != 2 && enemySwap != 4)
         {
             enemy->target = player->position;
         }
+
         
         //background and more update
         if (player->velocity.x > 0)
@@ -323,6 +420,8 @@ int main(int argc, char * argv[])
             strength_pickup->speed = 1;
             portal->speed = 1;
             enemy->speed = 1;
+            hydrant->health = 1;
+            if(enemy2){ enemy2->speed = 1; }
         }
         if (player->velocity.x < 0)
         {
@@ -334,6 +433,8 @@ int main(int argc, char * argv[])
             strength_pickup->speed = -1;
             portal->speed = -1;
             enemy->speed = -1;
+            hydrant->health = -1;
+            if (enemy2) { enemy2->speed = -1; }
         }
         if (player->velocity.x == 0)
         {
@@ -345,13 +446,14 @@ int main(int argc, char * argv[])
             strength_pickup->speed = 0;
             portal->speed = 0;
             enemy->speed = 0;
-
+            hydrant->health = 0;
+            if (enemy2) { enemy2->speed = 0; }
         }
 
         //skull hurt player
         if (enemySwap == 0)
         {
-            if (colliding)
+            if (colliding && enemy->thrown == 0)
             {
                 timer++;
                 if (timer >= 90)
@@ -365,14 +467,90 @@ int main(int argc, char * argv[])
                 timer = 0;
             }
         }
+
         
-        //shooter hurt player
-        if (enemySwap == 2)
+
+        //hydrant kill enemy
+        if (enviroCollsion)
         {
-            if (enemy->position.y <= 200 && player->position.y <= 320 && count == 0)
-                player->health -= 3;
-            if (enemy->position.y >= 650 && player->position.y >= 625 && count == 0)
-                player->health -= 3;
+            enemy->health--;
+        }
+
+        //shuma hurt player
+        if (enemySwap == 4)
+        {
+            if (colliding)
+            {
+                if (attack2 == 0 && enemy->buffer >150)
+                {
+                    enemy->buffer = 0;
+                    attack2 = 1;
+                    player->health -= 2;
+                }
+            }
+            else
+            {
+                attack2 = 0;
+            }
+        }
+
+        //track target hitbox
+        enemy->target_hitbox = player->hitbox;
+        if (eyeball_blast) { eyeball_blast->target_hitbox = player->hitbox; }
+
+        //eyeball blast
+        if (enemySwap == 3)
+        {
+            if(enemy->buffer >= 100)
+            {
+                
+                if (player->position.x < enemy->position.x)
+                {
+                    eyeball_blast = eyeball_blast_ent_new(enemy->position);
+                    blastCount = 1;
+                    eyeball_blast->velocity.x = -3;
+                    enemy->buffer = 0;
+                }
+                else
+                {
+                    eyeball_blast = eyeball_blast_ent_new(enemy->position);
+                    blastCount = 1;
+                    eyeball_blast->velocity.x = 3;
+                    enemy->buffer = 0;
+                }
+            }
+        }
+        //eyeball blast hurt player
+        if (blast_collision && ouchCount == 0)
+        {
+            player->health -= 2;
+            ouchCount = 1;
+        }
+
+        //player level updater
+        if(score==20)
+        {
+            player->level = 2;
+            score += 1;
+            gfc_sound_play(levelup, 0, 50, -1, -1);
+        }
+        if (score == 30)
+        {
+            player->level = 3;
+            score += 1;
+            gfc_sound_play(levelup, 0, 50, -1, -1);
+        }
+        if (score == 35)
+        {
+            player->level = 4;
+            score += 1;
+            gfc_sound_play(levelup, 0, 50, -1, -1);
+        }
+
+
+        if (!blast_collision)
+        {
+            ouchCount = 0;
         }
 
         //hurt player
@@ -390,6 +568,12 @@ int main(int argc, char * argv[])
         if (keys[SDL_SCANCODE_H])
         {
             slog("%i", highscore);
+        }
+        
+        //hydrant manager
+        if (hydrant_collision && player->isAttacking)
+        {
+            hydrant->speed = 1;
         }
         
         //chair manager
@@ -435,12 +619,36 @@ int main(int argc, char * argv[])
         }
 
         //kill enemy
-        if (enemy->health <= 0)
+        if (enemy->health <= 0 || enemy->draw_scale.x >=20 || enemy->draw_scale.x<=0)
         {
             entity_free(enemy);
             enemyCount = 0;
+            if (level == 3)
+            {
+                enemySwap ++;
+                if (enemySwap == 5)
+                {
+                    enemySwap = 0;
+                }
+                if (enemySwap == 2)
+                {
+                    enemySwap = 3;
+                }
+            }
+
             score++;
         }
+
+
+
+        //last level
+        if (level == 3 && bg->position.x <= -4000 && vountBoss ==0)
+        {
+            vountBoss = 1;
+            BOSSMODE = 1;
+            BOSS = boss_ent_new(vector2d(200, 500));
+        }
+        
 
         if (score>highscore)
         {
@@ -449,15 +657,50 @@ int main(int argc, char * argv[])
 
         if (player->health <= 0) done = 1;
 
-        if (bg->position.x <= -5000)
+        if (bg->position.x <= -5000 && level != 3)
         {
-            Mix_HaltMusic();
-            player->position = vector2d(300, 500);
-            bg->sprite = gf2d_sprite_load_image("images/backgrounds/xmenarcade.png");
-            portal->position=(vector2d(7000, 500));
-            bg->position = vector2d(0, 0);
-            music = Mix_LoadMUS("music/KHBattle.mp3");
-            Mix_PlayMusic(music, -1);
+            if (level == 0)
+            {
+                Mix_HaltMusic();
+                health_pickup = health_ent_new(vector2d(900, 650));
+                //enemy2 = shuma_ent_new(vector2d(200, 500));
+                player->position = vector2d(300, 500);
+                bg->sprite = gf2d_sprite_load_image("images/backgrounds/xmenarcade.png");
+                portal->position = (vector2d(7000, 500));
+                bg->position = vector2d(0, 0);
+                music = Mix_LoadMUS("music/KHBattle.mp3");
+                Mix_PlayMusic(music, -1);
+                level = 1;
+                entity_free(enemy);
+                enemySwap = 1;
+            }
+            else if (level == 1)
+            {
+                Mix_HaltMusic();
+                health_pickup = health_ent_new(vector2d(900, 650));
+                player->position = vector2d(300, 500);
+                bg->sprite = gf2d_sprite_load_image("images/backgrounds/japan.jpg");
+                portal->position = (vector2d(7000, 500));
+                bg->position = vector2d(0, 10);
+                music = Mix_LoadMUS("music/japan_music.mp3");
+                Mix_PlayMusic(music, -1);
+                level = 2;
+                entity_free(enemy);
+                enemySwap = 3;
+            }
+            else if (level == 2)
+            {
+                Mix_HaltMusic();
+                health_pickup = health_ent_new(vector2d(900, 650));
+                player->position = vector2d(300, 500);
+                bg->sprite = gf2d_sprite_load_image("images/backgrounds/hellbg.png");
+                //portal->position = (vector2d(7000, 500));
+                bg->position = vector2d(0, 10);
+                music = Mix_LoadMUS("music/finalboss.mp3");
+                Mix_PlayMusic(music, -1);
+                level = 3;
+                entity_free(enemy);
+            }
         }
 
        
@@ -470,8 +713,10 @@ int main(int argc, char * argv[])
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
 
+    SDL_JoystickClose(joystick);
     Mix_HaltMusic();
     Mix_FreeMusic(music);
+    gfc_sound_clear_all();
     slog("---==== END ====---");
     return 0;
 }

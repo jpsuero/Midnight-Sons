@@ -155,9 +155,9 @@ void venom_think(Entity* self)
 			{
 				healing = 1;
 			}
-			else if (event.jbutton.button == 0)
+			else if (event.jbutton.button == 10)
 			{
-				jumping = 1;
+				poisoning = 1;
 			}
 			
 		}
@@ -183,9 +183,9 @@ void venom_think(Entity* self)
 				healing = 0;
 				self->canAttack = 1;
 			}
-			else if (event.jbutton.button == 0)
+			else if (event.jbutton.button == 10)
 			{
-				jumping = 0;
+				poisoning = 0;
 				self->canAttack = 1;
 			}
 		}
@@ -248,7 +248,7 @@ void venom_think(Entity* self)
 		gfc_sound_play(swipe, 0, 10, -1, -1);
 	}
 	//heal
-	if (keys[SDL_SCANCODE_F] || healing && self->canAttack == 1 && self->stamina == 5)
+	if (keys[SDL_SCANCODE_F] || healing && self->canAttack == 1 && self->stamina == 5 && self->level >= 3)
 	{
 		self->sprite = gf2d_sprite_load_all("images/venom_attack4.png", 246, 191, 18);
 		self->player_state = 6;
@@ -258,7 +258,7 @@ void venom_think(Entity* self)
 		gfc_sound_play(heal, 0, 10, -1, -1);
 	}
 	//chomp
-	if (keys[SDL_SCANCODE_G] || chomping && self->canAttack == 1 && self->stamina >= 3)
+	if (keys[SDL_SCANCODE_G] || chomping && self->canAttack == 1 && self->stamina >= 3 && self->level >= 2)
 	{
 		self->sprite = gf2d_sprite_load_all("images/venom_attack3.png", 323, 135, 1);
 		self->player_state = 7;
@@ -267,14 +267,13 @@ void venom_think(Entity* self)
 		self->stamina -= 3;
 		gfc_sound_play(chomp, 0, 10, -1, -1);
 	}
-	//poisoning
+	//throwing
 	if (keys[SDL_SCANCODE_X] || poisoning && self->canAttack == 1)
 	{
 		self->sprite = gf2d_sprite_load_all("images/venom_poison.png", 220, 144, 7);
 		self->player_state = 8;
 		self->canAttack = 0;
 		self->isAttacking = 4;
-		self->stamina -= 3;
 		gfc_sound_play(poison, 0, 10, -1, -1);
 	}
 
@@ -287,6 +286,7 @@ void venom_think(Entity* self)
 		self->frame = (self->frame + 0.01);
 		self->isAttacking = 0;
 	}
+
 }
 
 Entity* venom_new(Vector2D position)
@@ -315,6 +315,7 @@ Entity* venom_new(Vector2D position)
 	ent->stamina = 5;
 	ent->flip = vector2d(0, 0);
 	ent->canAttack = 1;
+	ent->level = 1;
 	vector2d_copy(ent->position, position);
 	
 	ent->hitbox.w = 200;

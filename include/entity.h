@@ -19,20 +19,24 @@ typedef struct ENTITY_S
     Vector4D    color;      /**color for hitbox rectangle*/
     int         isEnemy;    /** if 1 entity is an enemy*/
     float       health;     /**entity health*/
-    float       stamina;
-    int         invisible;
-    int         speed;
-    int         strength;
-    int         isColliding;
+    float       stamina;    /**entity stamina level*/
+    int         invisible;  /**can cause enemies to not find target(for punisher)*/
+    int         speed;      /**player speed*/
+    int         buffer;     /**used for eyeball shots*/
+    int         strength;   /**how strong your player is*/
     int         frame_limit; /**used for animations*/
-    int         player_state; 
-    int         isAttacking; /**1 for light, 2 for medium, 3 for heavy*/
-    int         canAttack;
+    int         player_state; /**used for fps manipulation*/
+    int         isAttacking; /*1 for light, 2 for medium, 3 for heavy*/
+    int         canAttack;  /*attack buffer for player*/
+    int         thrown;     /**enemy thrown, 1 for yes, 0 for no*/
     Vector2D    target;     /**player to target*/
     Vector2D    flip;
+    int         level;      /**player level, used for upgrades*/
     void (*think)(struct ENTITY_S *self);   /**<a pointer to a think function for this entity*/
     void (*update)(struct ENTITY_S* self); //update thingy
     SDL_Rect    hitbox;     /** used to track player hitbox*/
+    SDL_Rect    target_hitbox;
+
 
 }Entity;
 
